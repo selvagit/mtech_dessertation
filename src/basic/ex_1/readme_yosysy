@@ -1,0 +1,442 @@
+selva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$ yosys
+
+ /----------------------------------------------------------------------------\
+ |                                                                            |
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |                                                                            |
+ |  Copyright (C) 2012 - 2018  Clifford Wolf <clifford@clifford.at>           |
+ |                                                                            |
+ |  Permission to use, copy, modify, and/or distribute this software for any  |
+ |  purpose with or without fee is hereby granted, provided that the above    |
+ |  copyright notice and this permission notice appear in all copies.         |
+ |                                                                            |
+ |  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES  |
+ |  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF          |
+ |  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR   |
+ |  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES    |
+ |  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN     |
+ |  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   |
+ |  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            |
+ |                                                                            |
+ \----------------------------------------------------------------------------/
+
+ Yosys 0.8 (git sha1 5706e90)
+
+
+yosys> read_verilog d_flipflop.v
+1. Executing Verilog-2005 frontend.
+Parsing Verilog input from `d_flipflop.v' to AST representation.
+Generating RTLIL representation for module `\d_flipflop'.
+Successfully finished Verilog frontend.
+
+yosys> hirearchy -check
+ERROR: No such command: hirearchy (type 'help' for a command overview)
+
+yosys> hierarchy -check
+
+2. Executing HIERARCHY pass (managing design hierarchy).
+
+yosys> proc
+
+3. Executing PROC pass (convert processes to netlists).
+
+3.1. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Cleaned up 0 empty switches.
+
+3.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
+Removed a total of 0 dead cases.
+
+3.3. Executing PROC_INIT pass (extract init attributes).
+
+3.4. Executing PROC_ARST pass (detect async resets in processes).
+
+3.5. Executing PROC_MUX pass (convert decision trees to multiplexers).
+Creating decoders for process `\d_flipflop.$proc$d_flipflop.v:9$1'.
+     1/1: $0\out_q[0:0]
+
+3.6. Executing PROC_DLATCH pass (convert process syncs to latches).
+
+3.7. Executing PROC_DFF pass (convert process syncs to FFs).
+Creating register for signal `\d_flipflop.\out_q' using process `\d_flipflop.$proc$d_flipflop.v:9$1'.
+  created $dff cell `$procdff$2' with positive edge clock.
+
+3.8. Executing PROC_CLEAN pass (remove empty switches from decision trees).
+Removing empty process `d_flipflop.$proc$d_flipflop.v:9$1'.
+Cleaned up 0 empty switches.
+
+yosys> opt
+
+4. Executing OPT pass (performing simple optimizations).
+
+4.1. Executing OPT_EXPR pass (perform const folding).
+
+4.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\d_flipflop'.
+Removed a total of 0 cells.
+
+4.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \d_flipflop..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+4.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \d_flipflop.
+Performed a total of 0 changes.
+
+4.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\d_flipflop'.
+Removed a total of 0 cells.
+
+4.6. Executing OPT_RMDFF pass (remove dff with constant values).
+
+4.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \d_flipflop..
+  removed 1 unused temporary wires.
+Removed 0 unused cells and 1 unused wires.
+
+4.8. Executing OPT_EXPR pass (perform const folding).
+
+4.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> fsm
+
+5. Executing FSM pass (extract and optimize FSM).
+
+5.1. Executing FSM_DETECT pass (finding FSMs in design).
+
+5.2. Executing FSM_EXTRACT pass (extracting FSM from design).
+
+5.3. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+5.4. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \d_flipflop..
+Removed 0 unused cells and 1 unused wires.
+
+5.5. Executing FSM_OPT pass (simple optimizations of FSMs).
+
+5.6. Executing FSM_RECODE pass (re-assigning FSM state encoding).
+
+5.7. Executing FSM_INFO pass (dumping all available information on FSM cells).
+
+5.8. Executing FSM_MAP pass (mapping FSMs to basic logic).
+
+yosys> opt
+
+6. Executing OPT pass (performing simple optimizations).
+
+6.1. Executing OPT_EXPR pass (perform const folding).
+
+6.2. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\d_flipflop'.
+Removed a total of 0 cells.
+
+6.3. Executing OPT_MUXTREE pass (detect dead branches in mux trees).
+Running muxtree optimizer on module \d_flipflop..
+  Creating internal representation of mux trees.
+  No muxes found in this module.
+Removed 0 multiplexer ports.
+
+6.4. Executing OPT_REDUCE pass (consolidate $*mux and $reduce_* inputs).
+  Optimizing cells in module \d_flipflop.
+Performed a total of 0 changes.
+
+6.5. Executing OPT_MERGE pass (detect identical cells).
+Finding identical cells in module `\d_flipflop'.
+Removed a total of 0 cells.
+
+6.6. Executing OPT_RMDFF pass (remove dff with constant values).
+
+6.7. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \d_flipflop..
+Removed 0 unused cells and 1 unused wires.
+
+6.8. Executing OPT_EXPR pass (perform const folding).
+
+6.9. Finished OPT passes. (There is nothing left to do.)
+
+yosys> show
+
+7. Generating Graphviz representation of design.
+Writing dot description to `/home/selva/.yosys_show.dot'.
+Dumping module d_flipflop to page 1.
+Exec: { test -f '/home/selva/.yosys_show.dot.pid' && fuser -s '/home/selva/.yosys_show.dot.pid'; } || ( echo $$ >&3; exec xdot '/home/selva/.yosys_show.dot'; ) 3> '/home/selva/.yosys_show.dot.pid' &
+
+yosys> Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(xdot:945): Gtk-CRITICAL **: 17:51:00.143: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+(xdot:945): Gtk-CRITICAL **: 17:51:00.144: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+(xdot:945): Gtk-CRITICAL **: 17:51:00.144: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+
+yosys> help show
+
+    show [options] [selection]
+
+Create a graphviz DOT file for the selected part of the design and compile it
+to a graphics file (usually SVG or PostScript).
+
+    -viewer <viewer>
+        Run the specified command with the graphics file as parameter.
+        On Windows, this pauses yosys until the viewer exits.
+
+    -format <format>
+        Generate a graphics file in the specified format. Use 'dot' to just
+        generate a .dot file, or other <format> strings such as 'svg' or 'ps'
+        to generate files in other formats (this calls the 'dot' command).
+
+    -lib <verilog_or_ilang_file>
+        Use the specified library file for determining whether cell ports are
+        inputs or outputs. This option can be used multiple times to specify
+        more than one library.
+
+        note: in most cases it is better to load the library before calling
+        show with 'read_verilog -lib <filename>'. it is also possible to
+        load liberty files with 'read_liberty -lib <filename>'.
+
+    -prefix <prefix>
+        generate <prefix>.* instead of ~/.yosys_show.*
+
+    -color <color> <object>
+        assign the specified color to the specified object. The object can be
+        a single selection wildcard expressions or a saved set of objects in
+        the @<name> syntax (see "help select" for details).
+
+    -label <text> <object>
+        assign the specified label text to the specified object. The object can
+        be a single selection wildcard expressions or a saved set of objects in
+        the @<name> syntax (see "help select" for details).
+
+    -colors <seed>
+        Randomly assign colors to the wires. The integer argument is the seed
+        for the random number generator. Change the seed value if the colored
+        graph still is ambiguous. A seed of zero deactivates the coloring.
+
+    -colorattr <attribute_name>
+        Use the specified attribute to assign colors. A unique color is
+        assigned to each unique value of this attribute.
+
+    -width
+        annotate buses with a label indicating the width of the bus.
+
+    -signed
+        mark ports (A, B) that are declared as signed (using the [AB]_SIGNED
+        cell parameter) with an asterisk next to the port name.
+
+    -stretch
+        stretch the graph so all inputs are on the left side and all outputs
+        (including inout ports) are on the right side.
+
+    -pause
+        wait for the use to press enter to before returning
+
+    -enum
+        enumerate objects with internal ($-prefixed) names
+
+    -long
+        do not abbreviate objects with internal ($-prefixed) names
+
+    -notitle
+        do not add the module name as graph title to the dot file
+
+When no <format> is specified, 'dot' is used. When no <format> and <viewer> is
+specified, 'xdot' is used to display the schematic (POSIX systems only).
+
+The generated output files are '~/.yosys_show.dot' and '~/.yosys_show.<format>',
+unless another prefix is specified using -prefix <prefix>.
+
+Yosys on Windows and YosysJS use different defaults: The output is written
+to 'show.dot' in the current directory and new viewer is launched each time
+the 'show' command is executed.
+
+
+yosys> help show | less
+
+    help  ................  list all commands
+    help <command>  ......  print help message for given command
+    help -all  ...........  print complete command reference
+
+    help -cells ..........  list all cell types
+    help <celltype>  .....  print help message for given cell type
+    help <celltype>+  ....  print verilog code for given cell type
+
+
+yosys> help show
+
+    show [options] [selection]
+
+Create a graphviz DOT file for the selected part of the design and compile it
+to a graphics file (usually SVG or PostScript).
+
+    -viewer <viewer>
+        Run the specified command with the graphics file as parameter.
+        On Windows, this pauses yosys until the viewer exits.
+
+    -format <format>
+        Generate a graphics file in the specified format. Use 'dot' to just
+        generate a .dot file, or other <format> strings such as 'svg' or 'ps'
+        to generate files in other formats (this calls the 'dot' command).
+
+    -lib <verilog_or_ilang_file>
+        Use the specified library file for determining whether cell ports are
+        inputs or outputs. This option can be used multiple times to specify
+        more than one library.
+
+        note: in most cases it is better to load the library before calling
+        show with 'read_verilog -lib <filename>'. it is also possible to
+        load liberty files with 'read_liberty -lib <filename>'.
+
+    -prefix <prefix>
+        generate <prefix>.* instead of ~/.yosys_show.*
+
+    -color <color> <object>
+        assign the specified color to the specified object. The object can be
+        a single selection wildcard expressions or a saved set of objects in
+        the @<name> syntax (see "help select" for details).
+
+    -label <text> <object>
+        assign the specified label text to the specified object. The object can
+        be a single selection wildcard expressions or a saved set of objects in
+        the @<name> syntax (see "help select" for details).
+
+    -colors <seed>
+        Randomly assign colors to the wires. The integer argument is the seed
+        for the random number generator. Change the seed value if the colored
+        graph still is ambiguous. A seed of zero deactivates the coloring.
+
+    -colorattr <attribute_name>
+        Use the specified attribute to assign colors. A unique color is
+        assigned to each unique value of this attribute.
+
+    -width
+        annotate buses with a label indicating the width of the bus.
+
+    -signed
+        mark ports (A, B) that are declared as signed (using the [AB]_SIGNED
+        cell parameter) with an asterisk next to the port name.
+
+    -stretch
+        stretch the graph so all inputs are on the left side and all outputs
+        (including inout ports) are on the right side.
+
+    -pause
+        wait for the use to press enter to before returning
+
+    -enum
+        enumerate objects with internal ($-prefixed) names
+
+    -long
+        do not abbreviate objects with internal ($-prefixed) names
+
+    -notitle
+        do not add the module name as graph title to the dot file
+
+
+When no <format> is specified, 'dot' is used. When no <format> and <viewer> is
+specified, 'xdot' is used to display the schematic (POSIX systems only).
+
+YOSYS(1)                                                             General Commands Manual                                                             YOSYS(1)
+
+NAME
+       yosys - Yosys Open SYnthesis Suite
+
+SYNOPSIS
+       yosys [options] <infile>
+
+DESCRIPTION
+       This manual page documents briefly the yosys command.
+
+       yosys is a program that synthesizes RTL to gate-level logic.
+
+OPTIONS
+       A summary of options is included below.
+
+       -Q     suppress printing of banner (copyright, disclaimer, version)
+
+       -T     suppress printing of footer (log hash, version, timing statistics)
+
+       -q     quiet operation. only write error message to console use this option twice to also quiet warning messages
+
+       -v <level>
+              print log headers up to level <level> to the console. (implies -q)
+
+       -t     annotate all log messages with a time stamp
+
+       -d     print more detailed timing stats at exit
+
+       -l logfile
+              write log messages to the specified file
+
+       -L logfile
+              like -l but open log file in line buffered mode
+
+       -o outfile
+              write the design to the specified file on exit
+
+       -b backend
+              use this backend for the output file specified on the command line
+
+       -f frontend
+              use the specified frontend for the input files on the command line
+
+       -H     print the command list
+
+       -h command
+              print the help message for the specified command
+
+       -s scriptfile
+              execute the commands in the script file
+
+       -c tcl_scriptfile
+              execute the commands in the tcl script file (see 'help tcl' for details)
+
+       -p command
+              execute the commands
+
+       -m module_file
+              load the specified module (aka plugin)
+
+       -X     enable tracing of core data structure changes. for debugging
+
+The generated output files are '~/.yosys_show.dot' and '~/.yosys_show.<format>',
+unless another prefix is specified using -prefix <prefix>.
+
+Yosys on Windows and YosysJS use different defaults: The output is written
+to 'show.dot' in the current directory and new viewer is launched each time
+the 'show' command is executed.
+
+
+yosys> show
+8. Generating Graphviz representation of design.
+Writing dot description to `/home/selva/.yosys_show.dot'.
+Dumping module d_flipflop to page 1.
+Exec: { test -f '/home/selva/.yosys_show.dot.pid' && fuser -s '/home/selva/.yosys_show.dot.pid'; } || ( echo $$ >&3; exec xdot '/home/selva/.yosys_show.dot'; ) 3> '/home/selva/.yosys_show.dot.pid' &
+
+yosys> sh: 1: fuser: not found
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(xdot:947): Gtk-CRITICAL **: 18:01:07.916: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+(xdot:947): Gtk-CRITICAL **: 18:01:07.917: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+(xdot:947): Gtk-CRITICAL **: 18:01:07.918: _gtk_style_provider_private_get_settings: assertion 'GTK_IS_STYLE_PROVIDER_PRIVATE (provider)' failed
+
+
+yosys> quit
+ERROR: No such command: quit (type 'help' for a command overview)
+
+yosys> exit
+
+End of script. Logfile hash: 708f28b67c
+CPU: user 0.03s system 0.11s, MEM: 24.91 MB total, 5.06 MB resident
+Yosys 0.8 (git sha1 5706e90)
+Time spent: 19% 4x opt_merge (0 sec), 19% 3x help (0 sec), ...
+selva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$ vi ~/.yosys_show.dot
+selva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$ dot
+^Cselva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$ dot -Tpdf ~/.yosys_show.dot > t.pdf
+selva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$ man yosys
+selva@sveeramani-4:/mnt/d/mine/personal/coding/selvagit/mtech_dissertation/src/basic/ex_1$
