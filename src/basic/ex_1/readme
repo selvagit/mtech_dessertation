@@ -1,0 +1,9 @@
+
+Makefile --> Build environment
+d_flipflp.v --> verilog module source code
+tb_dff.v --> verilog module test bench
+test --> make file binary generated 
+test.vcd --> wave of the simulation
+output.ps --> ps of the wave of the simulation
+ouput.pef --> pdf of the wave of the simulation
+
