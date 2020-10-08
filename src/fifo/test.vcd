@@ -1,5 +1,5 @@
 $date
-	Thu Oct  8 00:33:22 2020
+	Thu Oct  8 22:42:10 2020
 $end
 $version
 	Icarus Verilog
@@ -27,18 +27,24 @@ $scope module dut $end
 $var wire 1 " inp_clk $end
 $var wire 8 & inp_d [7:0] $end
 $var wire 1 " out_clk $end
+$var wire 1 ' read_flg $end
 $var wire 1 % reset $end
-$var reg 8 ' inp_addr [7:0] $end
-$var reg 8 ( out_addr [7:0] $end
-$var reg 8 ) out_d [7:0] $end
+$var wire 1 ( write_flg $end
+$var reg 8 ) inp_addr [7:0] $end
+$var reg 8 * out_addr [7:0] $end
+$var reg 8 + out_d [7:0] $end
+$var integer 32 , j [31:0] $end
 $upscope $end
 $upscope $end
 $enddefinitions $end
 #0
 $dumpvars
+bx ,
+bx +
+bx *
 bx )
-bx (
-bx '
+0(
+0'
 bx &
 x%
 0$
@@ -61,6 +67,11 @@ $end
 0"
 #70
 1"
+#75
+b0 *
+b0 )
+b1000 ,
+1%
 #80
 0"
 #90
@@ -68,22 +79,53 @@ $end
 #100
 b0 !
 b0 &
+1(
 0"
 #110
-b1000 !
-b1000 &
+b1 )
+b1 !
+b1 &
 1"
 #120
-b0 !
-b0 &
+b10 !
+b10 &
 0"
 #130
+b10 )
+b11 !
+b11 &
 1"
 #140
+0(
 0"
 #150
+1'
 1"
 #160
 0"
 #170
+b1 *
+b0 #
+b0 +
 1"
+#180
+0"
+#190
+b10 *
+b10 #
+b10 +
+1"
+#200
+0"
+#210
+b11 *
+b0 #
+b0 +
+1"
+#220
+0'
+0"
+#230
+1"
+#240
+0"
