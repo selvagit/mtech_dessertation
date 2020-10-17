@@ -1,28 +1,17 @@
+`timescale 1 ns/1 ps
+
 task automatic write_pcap_task
     (
-     string        file_name,
-     ref reg       clk,
-     ref reg       packet_en,
-     ref reg [7:0] packet[]
+     integer fd,
+      reg       clk,
+      reg       packet_en,
+      reg [7:0] packet[64]
      );
 
-    reg [7:0]       file_hdr [23:0] = {
-                                       8'ha1,8'hb2,8'hc3,8'hd4,
-                                       8'h00,8'h02,8'h00,8'h04,
-                                       8'h00,8'h00,8'h00,8'h00,
-                                       8'h00,8'h00,8'h00,8'h00,
-                                       8'h00,8'h00,8'hff,8'hff,
-                                       8'h00,8'h00,8'h00,8'h01
-                                       };
-    reg [7:0]       pcap_hdr [15:0] = {
-                                       8'h00,8'h00,8'h00,8'h00,
-                                       8'h00,8'h00,8'h00,8'h00,
-                                       8'h00,8'h00,8'h00,8'h00,
-                                       8'h00,8'h00,8'h00,8'h00
-                                       };
-    reg [31:0]      len_pac=0;
+    automatic reg [7:0]       file_hdr [23:0];
+    automatic reg [7:0]       pcap_hdr [15:0]; 
+    automatic reg [31:0]      len_pac;
 
-    automatic integer fd = $fopen(file_name,"wb");
     foreach(file_hdr[i]) $fwrite(fd,"%c",file_hdr[i]);
     
     @(posedge clk);

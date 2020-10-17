@@ -1,10 +1,12 @@
+`timescale 1 ns/1 ps
+
 task automatic read_pcap_task
     (
-     string        file_name,
-     ref reg       clk,
-     ref reg       o_packet_en,
-     ref reg [7:0] o_packet[],
-     ref reg       end_read
+     integer fd,
+      reg       clk,
+      reg       o_packet_en,
+      reg [7:0] o_packet[64],
+      reg       end_read
      );
 
     localparam CLK_PAUSE = 4;
@@ -31,8 +33,6 @@ task automatic read_pcap_task
     automatic reg [31:00] packet_lenght = 0;
     automatic integer p = 0;
     automatic integer buf_w = 0;
-
-    automatic integer fd = $fopen(file_name,"r");
 
     o_packet_en = 0;
     o_packet = new[0];
