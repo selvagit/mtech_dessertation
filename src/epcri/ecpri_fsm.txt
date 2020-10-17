@@ -1,19 +1,14 @@
 @startuml
-title ecpri 
-
 state  ecpri {
     state reset
 
 state ecpri_rx {
-  state reset
-  state cpri_hdr
-  state read
-  state write
   reset_rx --> cpri_hdr : found cpri header
-  cpri_hdr --> read : read flg set
+  cpri_hdr --> read : read flg set / create_pkt, create_read_resp
   cpri_hdr --> write : write flg set 
   write --> write_to_mem : valid memory address
-  write_to_mem --> reset_rx : mem write successfull/create_tx_pkt, create_pkt 
+  write_to_mem --> reset_rx : mem write successfull/create_pkt, create_write_resp 
+  
   cpri_hdr --> reset_rx : invalid flag
   read -->reset_rx : invalid payload length
   write -->reset_rx : invalid payload length
@@ -21,27 +16,24 @@ state ecpri_rx {
 }
 
 state ecpri_tx {
-  state reset_tx
-  state tx_resp
-  state  rx_resp
   reset_tx-->eth_hdr : create_pkt 
   eth_hdr-->ip_hdr : create ip header
   ip_hdr --> udp_hdr : create udp header 
-  udp_hdr-->rx_resp : create_rx_pkt
-  udp_hdr-->tx_resp : create_tx_pkt
-  tx_resp-->complete : send_packet
-  rx_resp-->copy_from_mem: valid memory
-  rx_resp-->complete : invalid memory
+  udp_hdr-->read_resp : create_read_resp
+  udp_hdr-->write_resp : create_write_resp
+  write_resp-->complete : send_packet
+  read_resp-->copy_from_mem: valid memory
+  read_resp-->complete : invalid memory
   copy_from_mem --> complete : copy complete
   complete -> reset_tx : reset_ram
 }
 
-reset--> ecpri_tx : create_pkt
-reset--> ecpri_rx : create_rx_pkt
+reset--> ecpri_tx : send response
+reset--> ecpri_rx : parse the request 
 
 ecpri_rx -Right--> ecpri_tx : create_pkt
-ecpri_rx -Right--> ecpri_tx : create_rx_pkt
-ecpri_rx -Right--> ecpri_tx : create_tx_pkt 
+ecpri_rx -Right--> ecpri_tx : create_read_resp
+ecpri_rx -Right--> ecpri_tx : create_write_resp 
 
 }
 @enduml
