@@ -1,0 +1,61 @@
+@startuml
+state  ecpri {
+state reset
+
+state ecpri_rx {
+  reset_rx --> cpri_hdr : ip_pkt_recv / find cpri header
+  cpri_hdr --> reset_rx : / did not find cpri header
+
+  cpri_hdr --> cpri_type : / find cpri pkt type 
+  cpri_type --> read : / chech the read parameters 
+  cpri_type --> write : / check the write parameters 
+
+  read --> read_mem : /check memory
+  read_mem --> reset_rx : / invalid memory
+  read_mem --> read_payload :  / check payload 
+  read_payload --> reset_rx : / pyload error
+  read_payload --> raise_rx_resp :  / create_read_resp
+  raise_rx_resp --> reset_rx  : / done
+  
+  write --> write_mem : / check memory
+  write_mem --> reset_rx : / invalid memory
+  write_mem --> write_payload : / check payload
+  write_payload --> reset_rx : / pyload error
+  write_payload --> write_to_mem : / copy to memory
+  write_to_mem --> raise_tx_resp : / create_write_resp 
+  raise_tx_resp --> reset_rx : /done
+  
+}
+
+state ecpri_tx {
+  reset_tx-->read_resp : create_read_resp
+  reset_tx-->write_resp : create_write_resp
+
+  write_resp-->create_write_resp_hdr :  / copy the header and set the resp bit
+  create_write_resp_hdr-->complete :  / zero paylod response 
+
+  read_resp-->create_read_resp_hdr : / copy the header and set the resp bit
+  create_read_resp_hdr-->copy_from_mem : / copy the data 
+  copy_from_mem-->complete : / done 
+
+  complete-->reset_tx :  / reset_ram_0, create_pkt
+}
+
+state ip_pkt {
+  reset_ip_pkt-->eth_hdr : create_pkt / reset_ram_1 
+  eth_hdr-->ip_hdr : / create ip header
+  ip_hdr-->udp_hdr : / create udp header 
+  udp_hdr-->add_payload :  / add the payload  
+  add_payload-->reset_ip_pkt : / reset the module 
+}
+
+reset-->ecpri_tx : / reset the epcri_tx module 
+reset-->ecpri_rx : / reset the ecpri_rx module 
+reset-->ip_pkt : / reset the ip packet module
+
+ecpri_rx-->ecpri_tx : / create_read_resp
+ecpri_rx-->ecpri_tx : / create_write_resp 
+
+ecpri_tx --> ip_pkt  :  / create_pkt
+}
+@enduml

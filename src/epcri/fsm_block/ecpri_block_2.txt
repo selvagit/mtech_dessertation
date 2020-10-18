@@ -1,0 +1,39 @@
+digraph F {
+    graph [rankdir = LR, splines=ortho];
+
+    node[shape=record];
+
+    ecpri_rx[label="ecpri_rx", height=2];
+
+    ecpri_tx[label="ecpri_tx", height=2];
+
+    ip_pkt[label="ip_pkt", height=2];
+
+    ip_switch[label="ip_switch", height=2];
+
+    //fifo [label="fifo", height=2, color=blue]
+    fifo [label="fifo", height=2, style=filled, fillcolor=yellow ]
+
+    ram_1  [label="ram_1", height=2, style=filled, fillcolor=red ];
+    ram_2  [label="ram_2", height=2, style=filled, fillcolor=red ];
+    ram_3  [label="ram_3", height=2, style=filled, fillcolor=red ];
+
+    ecpri_rx -> ecpri_tx [label="rx_resp"];
+    ecpri_rx -> ecpri_tx [label="tx_resp"];
+    ecpri_rx -> ram_1 [label="eth_packet_hdr"];
+    ecpri_rx -> ram_3 [label="epcri_payload_read"];
+    fifo -> ecpri_rx [label="eth_packet"];
+   
+    ip_switch -> fifo [label="eth_packet"];
+    ip_switch -> ecpri_rx [label="recv_pkt"];
+
+    ram_3 -> ecpri_tx [label="epcri_payload_write"];
+    ecpri_tx -> ram_2 [label="cpri_packet"];
+    ecpri_tx -> ip_pkt [label="ip_create"];
+ 
+    ram_1 -> ip_pkt [label="eth_packet_hdr"];
+    ram_2 -> ip_pkt [label="cpri_packet"];
+
+    //ip_pkt -> ip_switch [label="eth_packet"];
+}
+
