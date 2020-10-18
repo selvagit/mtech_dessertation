@@ -1,5 +1,6 @@
-gen_pcap.py --> generates pcap files for testing 
-ecpri.v --> module for parsing the ecpri logic
-tb_ecpri.v --> test bench for the ecpri.v logic
-ecpri.pcap --> sample pcap file which does not udp based ecpri packet
-gen_ecpri.pcap --> is the generated pcap file
+
+The block and fsm are present in the below links
+
+![block diagram](./fsm_block/ecpri_block_2.txt)
+
+![fsm](./fsm_block/ecpri_fsm_1.txt)
