@@ -1,4 +1,5 @@
-# Contains the docs and code related to the MTech Dissertation activity
+# info
+Contains the docs and code related to the MTech Dissertation activity
 
 ## docs
 Contains the docs relevant to the dissertation
