@@ -1,0 +1,64 @@
+
+digraph F {
+    graph [rankdir = LR, splines=ortho];
+
+    node[shape=record];
+
+    ecpri_rx[label="ecpri_rx", height=32];
+
+    ecpri_tx[label="ecpri_tx", height=16 ];
+
+    ip_pkt[label="ip_pkt", height=6 ];
+
+    ip_switch[label="ip_switch", height=4 ];
+
+    fifo [label="fifo", style=filled, fillcolor=yellow, height=6  ]
+
+    ram_1  [label="ram_eth_packet_hdr", style=filled, fillcolor=red , height=8 ];
+    ram_2  [label="ram_cpri_packet_hdr", style=filled, fillcolor=red , height=8 ];
+    ram_3  [label="ram_cpri_payload", style=filled, fillcolor=red , height=8 ];
+   
+    { rank=same ram_1 ram_2 ram_3 }
+    { rank=same epcri_rx ecpri_tx }
+
+    ip_switch -> fifo [label="[7:0]data",penwidth=3,color=blue];
+    ip_switch -> fifo [label="we"];
+
+    fifo -> ecpri_rx [label="[7:0] data",penwidth=3,color=blue];
+    ecpri_rx -> fifo [label="oe"];
+
+    ip_switch -> ecpri_rx [label="recv_pkt"];
+
+    ecpri_rx -> ecpri_tx [label="rx_resp"];
+    ecpri_rx -> ecpri_tx [label="tx_resp"];
+
+    ecpri_rx -> ram_1 [label="[7:0] data",penwidth=3,color=blue];
+    ecpri_rx -> ram_1 [label="[15:0] addr",penwidth=3,color=red];
+    ecpri_rx -> ram_1 [label="we"];
+
+    ram_1 -> ecpri_tx [label="[7:0] data",penwidth=3,color=blue];
+    ecpri_tx -> ram_1 [label="[15:0] addr",penwidth=3,color=red];
+    ecpri_tx -> ram_1 [label="oe"];
+
+    ecpri_rx -> ram_3 [label="we"];
+    ecpri_rx -> ram_3 [label="[7:0] data",penwidth=3,color=blue];
+    ecpri_rx -> ram_3 [label="[16:0] addr",penwidth=3,color=red];
+
+    ram_3 -> ecpri_tx [label="[7:0] data",penwidth=3,color=blue];
+    ecpri_tx -> ram_3 [label="[15:0] addr",penwidth=3,color=red];
+    ecpri_tx -> ram_3 [label="oe"];
+
+    ecpri_tx -> ip_pkt [label="ip_create"];
+ 
+    ram_1 -> ip_pkt [label="[7:0] data",penwidth=3,color=blue];
+    ip_pkt -> ram_1 [label="[15:0] addr",penwidth=3,color=red];
+    ip_pkt -> ram_1 [label="oe"];
+
+    ram_2 -> ip_pkt [label="[7:0] data",penwidth=3,color=blue];
+    ip_pkt -> ram_2 [label="[15:0] addr",penwidth=3,color=red];
+    ip_pkt -> ram_2 [label="oe"];
+
+    #ip_pkt -> ip_switch [label="send_ip_pkt"];
+
+}
+
