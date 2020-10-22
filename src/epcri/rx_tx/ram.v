@@ -1,4 +1,4 @@
-
+// the code was taken from the link https://www.chipverify.com/verilog/verilog-single-port-ram 
 // single_port_sync_ram
 module ecpri_ram 
 # ( parameter ADDR_WIDTH = 16,
