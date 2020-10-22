@@ -12,7 +12,7 @@ wire [7:0] tx_payload_len;
 wire [7:0] data_to_mem;
 integer j;
 
-ecpri_rx tb_ecpri_rx( tx_payload_len, info_to_tx, data_to_mem, send_write_resp, send_read_resp,
+ecpri_rx dut_ecpri_rx( tx_payload_len, info_to_tx, data_to_mem, send_write_resp, send_read_resp,
                     clk, rx_buff, read_flg, reset);
 
 // reset the vriable & provide clock 
@@ -33,8 +33,8 @@ end
 // dump the output 
 initial
 begin
-    $dumpfile("test_ecpri.vcd");
-    $dumpvars(0,tb_ecpri_rx);
+    $dumpfile("ecpri.vcd");
+    $dumpvars(0,dut_ecpri_rx);
 end
 
 endmodule

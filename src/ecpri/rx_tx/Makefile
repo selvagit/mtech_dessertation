@@ -1,10 +1,10 @@
 
 build:
-	iverilog -Wall -o ./test_ecpri -g2005-sv  ecpri_rx.v ecpri_tx.v tb_ecpri.v
+	iverilog -Wall -o ./ecpri_tb.bin -g2005-sv  ecpri_rx.v ecpri_tx.v ecpri_tb.v
 
 run_ecpri :
-	vvp ./test_ecpri
+	vvp ./ecpri_tb.bin
 
 clean :
-	rm  ./test_ecpri
-	rm  ./test_ecpri.vcd
+	rm  ./ecpri_tb.bin
+	rm  ./ecpri.vcd
