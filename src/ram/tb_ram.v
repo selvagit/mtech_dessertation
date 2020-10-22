@@ -1,7 +1,7 @@
-module tb_ram
-#( parameter ADDR_WIDTH = 16,
-    parameter DATA_WIDTH = 8,
-    parameter DEPTH = 16);
+module tb_ram ();
+parameter ADDR_WIDTH = 16;
+parameter DATA_WIDTH = 8;
+parameter DEPTH = 16;
 
 reg clk;
 reg cs;
@@ -47,7 +47,8 @@ end
 
 initial begin
     $dumpfile("test_ram.vcd");
-    //$dumpall("test_ram.vcd");
+    $dumpall;
+    /*
     $dumpvars(0,clk);
     $dumpvars(0,addr);
     $dumpvars(0,data);
@@ -55,6 +56,7 @@ initial begin
     $dumpvars(0,we);
     $dumpvars(0,oe);
     $dumpvars(0,dut);
+    */
 end
 
 endmodule

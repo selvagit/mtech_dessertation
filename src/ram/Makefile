@@ -1,6 +1,6 @@
 
 build:
-	iverilog -Wall -o ./test_ram -g2005-sv  ram.v tb_ram.v
+	iverilog -Wall -o ./test_ram -g2005-sv  ram.v tb_ram.v &> build.log
 
 run_ram:
 	vvp -v ./test_ram
