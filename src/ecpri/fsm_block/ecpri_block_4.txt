@@ -52,9 +52,9 @@ digraph F {
     ecpri_tx:addr_1 -> ram_cpri_payload:addr_1 
     ram_cpri_payload:data_1 -> ecpri_tx:data_1      
 
-    ecpri_tx:we_0 -> ram_cpri_packet:we_0 
-    ecpri_tx:addr_0 -> ram_cpri_packet:addr_0 
-    ecpri_tx:data_0 -> ram_cpri_packet:data_0 
+    ecpri_tx:we_2 -> ram_cpri_packet:we_0 
+    ecpri_tx:addr_2 -> ram_cpri_packet:addr_0 
+    ecpri_tx:data_2 -> ram_cpri_packet:data_0 
 
     ecpri_tx:ip_create -> ip_pkt:ip_create 
 
