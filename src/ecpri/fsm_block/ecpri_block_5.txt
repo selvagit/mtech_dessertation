@@ -17,7 +17,7 @@ digraph F {
     ram_cpri_packet  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<ae_0>oe_0} | ram_cpri_packet | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
     ram_cpri_payload  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<ae_0>oe_0} | ram_cpri_payload | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1} }", style=filled, fillcolor=red ];
 
-    ram_recv_eth_packet  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<oe_0>oe_0} | ram_eth_packet_hdr | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
+    ram_recv_eth_packet  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<oe_0>oe_0} | ram_recv_eth_packet | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
 
     {rank=min; ip_switch }
     {rank=same; fifo,ram_recv_eth_packet}
