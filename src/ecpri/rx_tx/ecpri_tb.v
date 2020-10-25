@@ -4,24 +4,24 @@ module tb_ecpri();
 parameter DATA_WIDTH = 8 ;
 parameter ADDR_WIDTH = 16 ;
 
-output send_write_resp, send_read_resp; 
-output [DATA_WIDTH-1:0] resp_payload_len; 
+reg send_write_resp, send_read_resp; 
+reg [DATA_WIDTH-1:0] resp_payload_len; 
 
-output [ADDR_WIDTH-1:0] addr_0;
-output [DATA_WIDTH-1:0] data_0; 
-output we_0, oe_0; //info_to_tx, 
+reg [ADDR_WIDTH-1:0] addr_0;
+reg [DATA_WIDTH-1:0] data_0; 
+reg we_0, oe_0; //info_to_tx, 
 
-output [ADDR_WIDTH-1:0] addr_1;
-output [DATA_WIDTH-1:0] data_1; 
-output we_1, oe_1; 
+reg [ADDR_WIDTH-1:0] addr_1;
+reg [DATA_WIDTH-1:0] data_1; 
+reg we_1, oe_1; 
 
-output [ADDR_WIDTH-1:0] addr_2; 
-output [DATA_WIDTH-1:0] data_2; 
-output we_2, oe_2; //data_to_mem,   
+reg [ADDR_WIDTH-1:0] addr_2; 
+reg [DATA_WIDTH-1:0] data_2; 
+reg we_2, oe_2; //data_to_mem,   
 
-input clk; 
-input [DATA_WIDTH-1:0] inp_data_fifo; 
-input reg recv_pkt, reset;
+reg clk; 
+reg [DATA_WIDTH-1:0] inp_data_fifo; 
+reg recv_pkt, reset;
 
 integer j;
 
@@ -35,7 +35,7 @@ ecpri_rx dut_ecpri_rx(
     
 // reset the vriable & provide clock 
 initial begin 
-    forever #10 clk =~clk;
+    forever #10 clk <=~clk;
 end
 
 // provide input to the module 

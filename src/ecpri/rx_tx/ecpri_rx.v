@@ -14,10 +14,10 @@ parameter DATA_WIDTH = 8 ;
 parameter ADDR_WIDTH = 16 ;
 
 //--------------Input Ports----------------------- 
-input reset;
-input [DATA_WIDTH-1:0] inp_data_fifo;
-input clk;
-input recv_pkt;
+input wire reset;
+input wire [DATA_WIDTH-1:0] inp_data_fifo;
+input wire clk;
+input wire recv_pkt;
 
 //--------------Out Ports----------------------- 
 output reg send_write_resp;
@@ -30,7 +30,7 @@ output reg [DATA_WIDTH-1:0] data_0;
 output we_0;
 output oe_0;
 
-// port to transfer  
+// port to transfer, unused port in current implementation 
 output reg [ADDR_WIDTH-1:0] addr_1;
 output reg [DATA_WIDTH-1:0] data_1;
 output we_1;
