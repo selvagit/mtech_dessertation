@@ -1,6 +1,6 @@
 
 build:
-	iverilog -Wall -o ./ecpri_tb.bin -g2005-sv  ecpri_rx.v ecpri_tx.v ecpri_tb.v
+	iverilog -Wall -o ./ecpri_tb.bin -g2005-sv ../../ram/ram_dual_port.v ecpri_rx.v ecpri_tx.v ecpri_tb.v
 
 run_ecpri :
 	vvp ./ecpri_tb.bin
