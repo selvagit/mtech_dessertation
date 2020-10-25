@@ -1,0 +1,74 @@
+
+digraph F {
+    graph [rankdir = LR, splines=true, pad="0.5", nodesep="1", ranksep="2"]
+    node[shape=record];
+
+    ecpri_rx[label="{{<inp_data>inp_data|<recv_pkt>recv_pkt|<oe>oe}|ecpri_rx|{<we_0>we_0|<addr_0>addr_0|<data_0>data_0|<oe_0>oe_0|<we_1>we_1|<addr_1>addr_1|<data_1>data_1|<oe_1>oe_1|<we_2>we_2|<addr_2>addr_2|<data_2>data_2|<oe_2>oe_2|<read_resp>read_resp|<write_resp>write_resp}}"];
+
+    ecpri_tx[label="{{<read_resp>read_resp|<write_resp>write_resp|<we_0>we_0|<addr_0>addr_0|<data_0>data_0|<oe_0>oe_0 |<we_1>we_1|<addr_1>addr_1|<data_1>data_1|<oe_1>oe_1}|ecpri_tx|{<we_2>we_2|<addr_2>addr_2|<data_2>data_2|<oe_2>oe_2|<ip_create>ip_create}}"];
+
+    ip_pkt[label="{{<ip_create>ip_create|<we_1>we_1|<addr_1>addr_1|<data_1>data_1|<oe_1>oe_1| <we_2>we_2|<addr_2>addr_2|<data_2>data_2|<oe_2>oe_2}|ip_pkt|{<we_0>we_0|<addr_0>addr_0|<data_0>data_0|<oe_0>oe_0 }}"];
+
+    ip_switch[label="{ip_switch|{<recv_pkt>recv_pkt|<we>we|<out_data>out_data|<we_0>we_0|<addr_0>addr_0|<data_0>data_0|<oe_0>oe_0}}"];
+
+    fifo [label="{{<inp_data>inp_data|<we>we}|fifo|{<out_data>out_data|<oe>oe}}", style=filled, fillcolor=yellow]
+
+    ram_eth_packet_hdr  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<ae_0>oe_0} | ram_eth_packet_hdr | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
+    ram_cpri_packet  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<ae_0>oe_0} | ram_cpri_packet | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
+    ram_cpri_payload  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<ae_0>oe_0} | ram_cpri_payload | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1} }", style=filled, fillcolor=red ];
+
+    ram_recv_eth_packet  [label="{ {<addr_0>addr_0|<data_0>data_0|<we_0>we_0|<oe_0>oe_0} | ram_eth_packet_hdr | {<addr_1>addr_1|<data_1>data_1|<we_1>we_1|<oe_1>oe_1}}", style=filled, fillcolor=red ];
+
+    {rank=min; ip_switch }
+    {rank=same; fifo,ram_recv_eth_packet}
+    #{ rank=same; ecpri_tx,ram_cpri_payload}
+    #{ rank=same; ram_eth_packet_hdr,ram_cpri_packet}
+    { rank=max; ip_pkt}
+
+    ip_switch:out_data -> fifo:inp_data 
+    ip_switch:we -> fifo:we 
+
+    ip_switch:we_0 -> ram_recv_eth_packet:we_1  [color="red"]
+    ip_switch:addr_0 -> ram_recv_eth_packet:addr_1 [color="red"]
+    ip_switch:data_0 -> ram_recv_eth_packet:data_1 [color="red"]
+
+    fifo:out_data -> ecpri_rx: inp_data 
+    ecpri_rx:oe -> fifo:oe 
+
+    ip_switch:recv_pkt -> ecpri_rx:recv_pkt 
+
+    ecpri_rx:read_resp -> ecpri_tx:read_resp [color="orange"]
+    ecpri_rx:write_resp -> ecpri_tx:write_resp [color="brown"]
+
+    ecpri_rx:we_0 -> ram_eth_packet_hdr:we_0 
+    ecpri_rx:addr_0 -> ram_eth_packet_hdr:addr_0 
+    ecpri_rx:data_0 -> ram_eth_packet_hdr:data_0 
+
+    ecpri_rx:oe_1 -> ram_recv_eth_packet:oe_0 [color="blue"]
+    ecpri_rx:addr_1 -> ram_recv_eth_packet:addr_0 [color="blue"]
+    ram_recv_eth_packet:data_0 -> ecpri_rx:data_1 [color="blue"]
+
+    ecpri_rx:we_2 -> ram_cpri_payload:we_0 [color="green"]
+    ecpri_rx:addr_2 -> ram_cpri_payload:addr_0 [color="green"]
+    ecpri_rx:data_2 -> ram_cpri_payload:data_0 [color="green"]
+
+    ip_pkt:oe_1 -> ram_eth_packet_hdr:oe_1 
+    ip_pkt:addr_1 -> ram_eth_packet_hdr:addr_1 
+    ram_eth_packet_hdr:data_1 -> ip_pkt:data_1 
+
+    ecpri_tx:oe_1 -> ram_cpri_payload:oe_1 
+    ecpri_tx:addr_1 -> ram_cpri_payload:addr_1 
+    ram_cpri_payload:data_1 -> ecpri_tx:data_1      
+
+    ecpri_tx:we_2 -> ram_cpri_packet:we_0 
+    ecpri_tx:addr_2 -> ram_cpri_packet:addr_0 
+    ecpri_tx:data_2 -> ram_cpri_packet:data_0 
+
+    ecpri_tx:ip_create -> ip_pkt:ip_create 
+
+    ip_pkt:oe_2 -> ram_cpri_packet:oe_1 
+    ip_pkt:addr_2 -> ram_cpri_packet:addr_1 
+    ram_cpri_packet:data_1 -> ip_pkt:data_2 
+
+}
+

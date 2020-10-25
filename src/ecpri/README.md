@@ -3,7 +3,7 @@ The block and fsm are present in the below links
 
 ## Block diagram
 
-![block diagram](./fsm_block/ecpri_block_4.svg)
+![block diagram](./fsm_block/ecpri_block_5.svg)
 
 
 ## FSM 
