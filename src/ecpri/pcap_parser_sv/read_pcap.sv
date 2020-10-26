@@ -1,15 +1,20 @@
-`timescale 1 ns/1 ps
-
+//`timescale 1 ns/1 ps 
 task automatic read_pcap_task
     (
      integer fd,
       reg       clk,
       reg       o_packet_en,
-      reg [7:0] o_packet[64],
+      reg [7:0] o_packet[],
       reg       end_read
      );
 
     localparam CLK_PAUSE = 4;
+
+    automatic integer count_clk = 0;
+    automatic reg [07:00] data_in_8b = 0;
+    automatic reg [31:00] packet_lenght = 0;
+    automatic integer p = 0;
+    automatic integer buf_w = 0;
 
     struct packed       {
         bit [31:00] magic         ;
@@ -28,18 +33,13 @@ task automatic read_pcap_task
         bit [31:00] len     ;
     }pcap_pkt_hdr;
 
-    automatic integer count_clk = 0;
-    automatic reg [07:00] data_in_8b = 0;
-    automatic reg [31:00] packet_lenght = 0;
-    automatic integer p = 0;
-    automatic integer buf_w = 0;
-
     o_packet_en = 0;
     o_packet = new[0];
     end_read=0;
 
     @(negedge clk);
     $fread( pcap_file_hdr,fd );
+
     while(!$feof(fd)) begin
         @(negedge clk);
         o_packet_en = 0;
@@ -63,6 +63,7 @@ task automatic read_pcap_task
             count_clk = count_clk + 1;
         end
     end
+
     @(negedge clk);
     o_packet_en = 0;
     @(negedge clk);

@@ -1,4 +1,4 @@
-`timescale 1 ns/1 ps
+//`timescale 1 ns/1 ps
 
 task automatic write_pcap_task
     (
@@ -18,7 +18,7 @@ task automatic write_pcap_task
     while(1) begin
         @(posedge clk);
         if (packet_en) begin
-            len_pac = packet.size();
+            //len_pac = packet.size();
             pcap_hdr[0] = len_pac[7:0];
             pcap_hdr[1] = len_pac[15:8];
             pcap_hdr[2] = len_pac[23:16];
