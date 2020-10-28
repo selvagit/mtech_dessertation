@@ -1,3 +1,6 @@
+
+`timescale 1 us / 1 ns
+
 //-----------------------------------------------------
 // Design Name : ecpri
 // File Name   : ecpri_rx.v

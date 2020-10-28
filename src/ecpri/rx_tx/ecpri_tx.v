@@ -1,4 +1,6 @@
 
+`timescale 1 us / 1 ns
+
 	// ram will be better option between the rx and tx module , since the 
 	// mac, ip & port of the src and address address has to be swapped 
 
