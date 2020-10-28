@@ -7,22 +7,40 @@ module tb_ecpri();
 parameter DATA_WIDTH = 8 ;
 parameter ADDR_WIDTH = 16 ;
 
-// variable for linking the modules
+// edge to the eth ram 
+
+reg [ADDR_WIDTH-1:0] addr_to_eth_ram;
+wire [DATA_WIDTH-1:0] data_to_eth_ram; 
+reg we_to_eth_ram, oe_to_eth_ram; 
+
+// edge to and from the ecpri_rx
+reg [ADDR_WIDTH-1:0] addr_ecpri_rx_2_eth_ram;
+wire [DATA_WIDTH-1:0] data_ecpri_rx_2_eth_ram; 
+reg we_ecpri_rx_2_eth_ram, oe_ecpri_rx_2_eth_ram; 
+
+reg [ADDR_WIDTH-1:0] addr_ecpri_rx_2_ram_eth_packet_hdr;
+wire [DATA_WIDTH-1:0] data_ecpri_rx_2_ram_eth_packet_hdr;
+reg we_ecpri_rx_2_ram_eth_packet_hdr, oe_ecpri_rx_2_ram_eth_packet_hdr; 
+
+reg [ADDR_WIDTH-1:0] addr_ecpri_rx_2_ram_cpri_packet;
+wire [DATA_WIDTH-1:0] data_ecpri_rx_2_ram_cpri_packet;
+reg we_ecpri_rx_2_ram_cpri_packet, oe_ecpri_rx_2_ram_cpri_packet; 
+
+reg [ADDR_WIDTH-1:0] addr_ecpri_rx_2_ram_cpri_payload;
+wire [DATA_WIDTH-1:0] data_ecpri_rx_2_ram_cpri_payload;
+reg we_ecpri_rx_2_ram_cpri_payload, oe_ecpri_rx_2_ram_cpri_payload; 
+
 reg send_write_resp, send_read_resp; 
 reg [DATA_WIDTH-1:0] resp_payload_len; 
 
-reg [ADDR_WIDTH-1:0] addr_0;
-wire [DATA_WIDTH-1:0] data_0; 
-reg we_0, oe_0; //info_to_tx, 
+// edge to and from the ecpri_tx
 
-reg [ADDR_WIDTH-1:0] addr_1;
-wire [DATA_WIDTH-1:0] data_1; 
-reg we_1, oe_1; 
 
-reg [ADDR_WIDTH-1:0] addr_2; 
-wire [DATA_WIDTH-1:0] data_2; 
-reg we_2, oe_2; //data_to_mem,   
 
+
+// edge to and from the ip
+
+// 
 reg clk, clk_0, clk_1; 
 reg cs_0, cs_1;
 reg [DATA_WIDTH-1:0] inp_data_fifo; 
@@ -40,32 +58,31 @@ reg [DATA_WIDTH-1:0] tb_data;
 
 integer i;
 
-/*
-// ecpri_rx module instanstion
-ecpri_rx dut_ecpri_rx(
-    .send_write_resp(send_write_resp), .send_read_resp(send_read_resp), .resp_payload_len(resp_payload_len), 
-    .addr_0(addr_0), .data_0(data_0), .we_0(we_0), .oe_0(oe_0), //info_to_tx, 
-    .addr_1(addr_1), .data_1(data_1), .we_1(we_1), .oe_1(oe_1), 
-    .addr_2(addr_2), .data_2(data_2), .we_2(we_2), .oe_2(oe_2), //data_to_mem,   
-    .clk(clk), .inp_data_fifo(inp_data_fifo), .recv_pkt(recv_pkt), .reset(reset)
-);
-*/
-
 //#instantion of the ram modules
 //ram where the incoming packets are stored
 ram_dp_sr_sw  ram_recv_eth_packet (
 	.clk(clk)       , // Clock Input
-	.address_0(addr_0)  , // address_0 Input
-	.data_0(data_0)    , // data_0 bi-directional
+	.address_0(addr_to_eth_ram)  , // address_0 Input
+	.data_0(data_to_eth_ram)    , // data_0 bi-directional
 	.cs_0(cs_0)      , // Chip Select
-	.we_0(we_0)      , // Write Enable/Read Enable
-	.oe_0(oe_0)      , // Output Enable
-	.address_1(addr_1)    , // address_1 Input
-	.data_1(data_1)    , // data_1 bi-directional
+	.we_0(we_to_eth_ram)      , // Write Enable/Read Enable
+	.oe_0(oe_to_eth_ram)      , // Output Enable
+	.address_1(addr_ecpri_rx_2_eth_ram)    , // address_1 Input
+	.data_1(data_ecpri_rx_2_eth_ram)    , // data_1 bi-directional
 	.cs_1(cs_1)      , // Chip Select
-	.we_1(we_1)      , // Write Enable/Read Enable
-	.oe_1(oe_1)        // Output Enable
+	.we_1(we_ecpri_rx_2_eth_ram)      , // Write Enable/Read Enable
+	.oe_1(oe_ecpri_rx_2_eth_ram)        // Output Enable
 ); 
+
+// ecpri_rx module instanstion
+ecpri_rx dut_ecpri_rx(
+    .send_write_resp(send_write_resp), .send_read_resp(send_read_resp), .resp_payload_len(resp_payload_len), 
+    .addr_0(addr_ecpri_rx_2_ram_eth_packet_hdr), .data_0(data_ecpri_rx_2_ram_eth_packet_hdr), .we_0(we_ecpri_rx_2_ram_eth_packet_hdr), .oe_0(oe_ecpri_rx_2_ram_eth_packet_hdr), //info_to_tx, 
+    .addr_1(addr_ecpri_rx_2_eth_ram), .data_1(data_ecpri_rx_2_eth_ram), .we_1(we_ecpri_rx_2_eth_ram), .oe_1(oe_ecpri_rx_2_eth_ram), 
+    .addr_2(addr_ecpri_rx_2_ram_cpri_payload), .data_2(data_ecpri_rx_2_ram_cpri_payload), .we_2(we_ecpri_rx_2_ram_cpri_payload), .oe_2(oe_ecpri_rx_2_ram_cpri_payload), //data_to_mem,   
+    .clk(clk), .inp_data_fifo(inp_data_fifo), .recv_pkt(recv_pkt), .reset(reset)
+);
+
 
 /*
 //ram where the cpri payload is written/read from, 
@@ -121,7 +138,7 @@ initial begin
     forever #10 clk = ~clk;
 end
 
-assign data_0 = !oe_0 ? tb_data : 'hz;
+assign data_to_eth_ram = !oe_to_eth_ram ? tb_data : 'hz;
 
 // provide input to the module 
 initial begin 
@@ -150,7 +167,7 @@ initial begin
     #50;
     $display ("2");
     for ( i = 0; i < 100; i = i + 1) begin 
-        repeat (1) @(posedge clk) addr_0 = i; we_0 = 1; cs_0 = 1; oe_0 = 0; tb_data = temp_mem[i];
+        repeat (1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
         //$display ("ram_dp_inp_data %d %d ", tb_data, data_0);
     end
     #50;
