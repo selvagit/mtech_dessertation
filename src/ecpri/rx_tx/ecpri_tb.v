@@ -143,15 +143,17 @@ typedef struct packed       {
 }pcap_file_hdr;
 
 typedef struct packed      {
-    bit [31:00] tv_sec  ;
-    bit [31:00] tv_usec ;
-    bit [31:00] caplen  ;
-    bit [31:00] len     ;
+    bit [31:00] tv_sec  ;  //127:96
+    bit [31:00] tv_usec ;  //95:64
+    bit [31:00] caplen  ;  //63:32 
+    bit [31:00] len     ;  //31:0
 }pcap_pkt_hdr;
 
 integer pcap_file_hdr_len;
 integer pcap_pkt_hdr_len;
 integer pcap_payload_offset;
+integer pcap_payload_len;
+integer pcap_payload_end_addr;
 
 pcap_file_hdr pcap_file_hdr_mem;
 pcap_pkt_hdr  pcap_pkt_hdr_mem;
@@ -193,6 +195,7 @@ initial begin
     
     #50;
     $display ("2");
+    pcap_payload_len = 0;
     pcap_file_hdr_len = $bits(pcap_file_hdr);
     pcap_pkt_hdr_len = $bits(pcap_pkt_hdr);
     $display( "Size of pcap global header = %d  %d \n", pcap_file_hdr_len,  pcap_file_hdr_len/8);
@@ -228,12 +231,14 @@ initial begin
     $display ("caplen =%d", pcap_pkt_hdr_mem.caplen);
     $display ("len =%d", pcap_pkt_hdr_mem.len);
 
+    pcap_payload_len = pcap_pkt_hdr_flat[31:0];
+    pcap_payload_end_addr =  pcap_payload_offset + pcap_payload_offset;
 
-    #50;
+    #150;
     $display ("2");
-    for ( i = 0; i < 100; i = i + 1) begin 
+    for ( i = pcap_payload_offset; i < pcap_payload_end_addr ; i = i + 1) begin 
         repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
-        //$display ("ram_dp_inp_data %d %d ", tb_data, data_0);
+        $display ("ram_dp_inp_data %h", tb_data);
     end
 
     #50;
