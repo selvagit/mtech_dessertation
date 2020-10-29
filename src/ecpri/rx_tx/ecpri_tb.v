@@ -34,8 +34,9 @@ reg send_write_resp, send_read_resp;
 reg [DATA_WIDTH-1:0] resp_payload_len; 
 
 // edge to and from the ecpri_tx
-
-
+reg [ADDR_WIDTH-1:0] addr_ecpri_tx_2_ram_cpri_payload;
+wire [DATA_WIDTH-1:0] data_ecpri_tx_2_ram_cpri_payload;
+reg we_ecpri_tx_2_ram_cpri_payload, oe_ecpri_tx_2_ram_cpri_payload; 
 
 
 // edge to and from the ip
@@ -83,24 +84,23 @@ ecpri_rx dut_ecpri_rx(
     .clk(clk), .inp_data_fifo(inp_data_fifo), .recv_pkt(recv_pkt), .reset(reset)
 );
 
-
-/*
 //ram where the cpri payload is written/read from, 
 //this ram is also accessible from the cpu
 ram_dp_sr_sw  ram_cpri_payload (
     .clk(clk)       , // Clock Input
-	.address_0(addr_0)  , // address_0 Input
-	.data_0(data_0)    , // data_0 bi-directional
+	.address_0(addr_ecpri_rx_2_ram_cpri_payload)  , // address_0 Input
+	.data_0(data_ecpri_rx_2_ram_cpri_payload)    , // data_0 bi-directional
 	.cs_0(cs_0)      , // Chip Select
-	.we_0(we_0)      , // Write Enable/Read Enable
-	.oe_0(oe_0)      , // Output Enable
-	.address_1(addr_1)    , // address_1 Input
-	.data_1(data_1)    , // data_1 bi-directional
+	.we_0(we_ecpri_rx_2_ram_cpri_payload)      , // Write Enable/Read Enable
+	.oe_0(oe_ecpri_rx_2_ram_cpri_payload)      , // Output Enable
+	.address_1(addr_ecpri_tx_2_ram_cpri_payload)    , // address_1 Input
+	.data_1(data_ecpri_tx_2_ram_cpri_payload)    , // data_1 bi-directional
 	.cs_1(cs_1)      , // Chip Select
-	.we_1(we_1)      , // Write Enable/Read Enable
-	.oe_1(oe_1)        // Output Enable
+	.we_1(we_ecpri_tx_2_ram_cpri_payload)      , // Write Enable/Read Enable
+	.oe_1(oe_ecpri_tx_2_ram_cpri_payload)        // Output Enable
 );    
 
+/*
 //this ram is used for storing the resp packet
 ram_dp_sr_sw  ram_cpri_packet (
     .clk(clk)       , // Clock Input
@@ -132,6 +132,35 @@ ram_dp_sr_sw  ram_eth_packet_hdr (
 ); 
 */
 
+typedef struct packed       {
+    bit [31:00] magic         ; //191:160 
+    bit [15:00] version_major ;
+    bit [15:00] version_minor ; //159:128
+    bit [31:00] thiszone      ; //127:96
+    bit [31:00] sigfigs       ; //95:64
+    bit [31:00] snaplen       ; //63:32
+    bit [31:00] linktype      ; //31:0
+}pcap_file_hdr;
+
+typedef struct packed      {
+    bit [31:00] tv_sec  ;
+    bit [31:00] tv_usec ;
+    bit [31:00] caplen  ;
+    bit [31:00] len     ;
+}pcap_pkt_hdr;
+
+integer pcap_file_hdr_len;
+integer pcap_pkt_hdr_len;
+integer pcap_payload_offset;
+
+pcap_file_hdr pcap_file_hdr_mem;
+pcap_pkt_hdr  pcap_pkt_hdr_mem;
+
+reg [$bits(pcap_file_hdr)-1:0] pcap_file_hdr_flat; 
+reg [$bits(pcap_pkt_hdr)-1:0] pcap_pkt_hdr_flat; 
+
+integer return_value ;
+
 // reset the vriable & provide clock 
 initial begin
     clk = 0;
@@ -143,7 +172,10 @@ assign data_to_eth_ram = !oe_to_eth_ram ? tb_data : 'hz;
 // provide input to the module 
 initial begin 
     #10;
-    reset <= 0;
+    reset = 0;
+    addr_to_eth_ram = 0;
+    we_to_eth_ram  = 0; 
+
     #20;
     $display ("0");
     fd = $fopen("../gen_pcap/gen_ecpri.pcap","rb"); 
@@ -155,21 +187,55 @@ initial begin
         $display ("pcap file could not be opened %s", err_str);
         $finish; // end simulation
     end 
-
     eof = $fread(temp_mem,fd);
     $fclose (fd);
     $display ("File closed");
-    #50 
-    $display ("1");
-    //repeat (1) @(posedge clk)  addr_0 = 0; we_0 = 0; cs_0 = 0; oe_0 = 0; tb_data = 0;
-    //repeat (1) @(posedge clk)  addr_1 <= i; we_1 <= 1; cs_1 <= 1; oe_1 <= 0; tb_data <= 0;
+    
+    #50;
+    $display ("2");
+    pcap_file_hdr_len = $bits(pcap_file_hdr);
+    pcap_pkt_hdr_len = $bits(pcap_pkt_hdr);
+    $display( "Size of pcap global header = %d  %d \n", pcap_file_hdr_len,  pcap_file_hdr_len/8);
+    $display( "Size of per packet header = %d %d\n", pcap_pkt_hdr_len, pcap_pkt_hdr_len/8);
+
+    pcap_payload_offset = pcap_file_hdr_len/8 + pcap_pkt_hdr_len/8;
+    $display( "payload offet = %d \n", pcap_payload_offset);
+
+    fd = $fopen("../gen_pcap/gen_ecpri.pcap","rb"); 
+    return_value = $fread(pcap_file_hdr_flat,fd);
+    $display ("file hdr bits len =%d", return_value );
+    $display ("%h", pcap_file_hdr_flat );
+    //assign pcap_file_hdr_mem.linktype = pcap_file_hdr_flat[31:00];
+    //assign pcap_file_hdr_mem.snaplen = pcap_file_hdr_flat[63:32];
+
+    return_value = $fread(pcap_pkt_hdr_flat,fd);
+    $display ("pkt hdr bits len =%d", return_value );
+    $display ("%h", pcap_pkt_hdr_flat );
+    //assign pcap_pkt_hdr_mem = pcap_pkt_hdr_flat;
+
+    $fclose(fd);
+
+    $display ("magic =%h", pcap_file_hdr_flat[191:160]);
+    $display ("verson_major =%h", pcap_file_hdr_mem.version_major);
+    $display ("verson_mnor =%h", pcap_file_hdr_mem.version_minor);
+    $display ("thiszone =%h", pcap_file_hdr_mem.thiszone);
+    $display ("sigfigs =%h", pcap_file_hdr_mem.sigfigs);
+    $display ("snaplen =%h", pcap_file_hdr_flat[63:32]);
+    $display ("linktype =%h", pcap_file_hdr_flat[31:00]);
+    
+    $display ("tv_sec =%d", pcap_pkt_hdr_mem.tv_sec);
+    $display ("tv_usec =%d", pcap_pkt_hdr_mem.tv_usec);
+    $display ("caplen =%d", pcap_pkt_hdr_mem.caplen);
+    $display ("len =%d", pcap_pkt_hdr_mem.len);
+
 
     #50;
     $display ("2");
     for ( i = 0; i < 100; i = i + 1) begin 
-        repeat (1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
+        repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
         //$display ("ram_dp_inp_data %d %d ", tb_data, data_0);
     end
+
     #50;
     $display ("3");
     $finish;
