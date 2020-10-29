@@ -1,0 +1,73 @@
+vvp ./ecpri_tb.bin
+VCD info: dumpfile ecpri.vcd opened for output.
+VCD warning: ignoring signals in previously scanned scope tb_ecpri.ram_recv_eth_packet.
+VCD warning: ignoring signals in previously scanned scope tb_ecpri.ram_recv_eth_packet.MEM_READ_0.
+VCD warning: ignoring signals in previously scanned scope tb_ecpri.ram_recv_eth_packet.MEM_READ_1.
+VCD warning: ignoring signals in previously scanned scope tb_ecpri.ram_recv_eth_packet.MEM_WRITE.
+0
+pcap file was opened
+File closed
+2
+Size of pcap global header =         192           24 
+
+Size of per packet header =         128          16
+
+payload offet =          40 
+
+file hdr bits len =         24
+d4c3b2a1020004000000000000000000ffff000001000000
+pkt hdr bits len =         16
+0e6f8c5fcd1201003900000039000000
+magic =d4c3b2a1
+verson_major =0000
+verson_mnor =0000
+thiszone =00000000
+sigfigs =00000000
+snaplen =ffff0000
+linktype =01000000
+tv_sec =         0
+tv_usec =         0
+caplen =         0
+len =         0
+2
+ram_dp_inp_data 77
+ram_dp_inp_data 88
+ram_dp_inp_data 99
+ram_dp_inp_data aa
+ram_dp_inp_data bb
+ram_dp_inp_data cc
+ram_dp_inp_data 11
+ram_dp_inp_data 22
+ram_dp_inp_data 33
+ram_dp_inp_data 44
+ram_dp_inp_data 55
+ram_dp_inp_data 66
+ram_dp_inp_data 08
+ram_dp_inp_data 00
+ram_dp_inp_data 45
+ram_dp_inp_data 00
+ram_dp_inp_data 00
+ram_dp_inp_data 2b
+ram_dp_inp_data 00
+ram_dp_inp_data 01
+ram_dp_inp_data 00
+ram_dp_inp_data 00
+ram_dp_inp_data 40
+ram_dp_inp_data 11
+ram_dp_inp_data ef
+ram_dp_inp_data 6e
+ram_dp_inp_data c0
+ram_dp_inp_data a8
+ram_dp_inp_data 00
+ram_dp_inp_data 01
+ram_dp_inp_data c0
+ram_dp_inp_data a8
+ram_dp_inp_data 0a
+ram_dp_inp_data 01
+ram_dp_inp_data 00
+ram_dp_inp_data 01
+ram_dp_inp_data 01
+ram_dp_inp_data 01
+ram_dp_inp_data 00
+ram_dp_inp_data 17
+3
