@@ -152,16 +152,17 @@ typedef struct packed      {
 integer pcap_file_hdr_len;
 integer pcap_pkt_hdr_len;
 integer pcap_payload_offset;
-integer pcap_payload_len;
-integer pcap_payload_end_addr;
 
 pcap_file_hdr pcap_file_hdr_mem;
 pcap_pkt_hdr  pcap_pkt_hdr_mem;
 
-reg [$bits(pcap_file_hdr)-1:0] pcap_file_hdr_flat; 
-reg [$bits(pcap_pkt_hdr)-1:0] pcap_pkt_hdr_flat; 
+reg [31:0] pcap_file_hdr_flat [$bits(pcap_file_hdr)/32];
+reg [31:0] pcap_pkt_hdr_flat [$bits(pcap_pkt_hdr)/32]; 
 
 integer return_value ;
+
+reg [31:0] temp ;
+reg [31:0] payload_len;
 
 // reset the vriable & provide clock 
 initial begin
@@ -179,8 +180,8 @@ initial begin
     we_to_eth_ram  = 0; 
 
     #20;
-    $display ("0");
-    fd = $fopen("../gen_pcap/gen_ecpri.pcap","rb"); 
+    $display ("state 0");
+    fd = $fopen("../gen_pcap/ecpri.pcap","rb"); 
     if ( fd ) begin 
         $display ("pcap file was opened");
         fdw = $fopen("cp_ecpri.pcap","wb"); 
@@ -194,55 +195,44 @@ initial begin
     $display ("File closed");
     
     #50;
-    $display ("2");
-    pcap_payload_len = 0;
+    $display ("state 1");
     pcap_file_hdr_len = $bits(pcap_file_hdr);
     pcap_pkt_hdr_len = $bits(pcap_pkt_hdr);
-    $display( "Size of pcap global header = %d  %d \n", pcap_file_hdr_len,  pcap_file_hdr_len/8);
-    $display( "Size of per packet header = %d %d\n", pcap_pkt_hdr_len, pcap_pkt_hdr_len/8);
+    $display( "Size of pcap global header = %d %d", pcap_file_hdr_len,  pcap_file_hdr_len/8);
+    $display( "Size of per packet header = %d %d", pcap_pkt_hdr_len, pcap_pkt_hdr_len/8);
 
     pcap_payload_offset = pcap_file_hdr_len/8 + pcap_pkt_hdr_len/8;
-    $display( "payload offet = %d \n", pcap_payload_offset);
+    $display( "payload offet = %d", pcap_payload_offset);
 
-    fd = $fopen("../gen_pcap/gen_ecpri.pcap","rb"); 
+    fd = $fopen("../gen_pcap/ecpri.pcap","rb"); 
     return_value = $fread(pcap_file_hdr_flat,fd);
-    $display ("file hdr bits len =%d", return_value );
-    $display ("%h", pcap_file_hdr_flat );
-    //assign pcap_file_hdr_mem.linktype = pcap_file_hdr_flat[31:00];
-    //assign pcap_file_hdr_mem.snaplen = pcap_file_hdr_flat[63:32];
+    $display ("file hdr bits len =%d", return_value);
 
     return_value = $fread(pcap_pkt_hdr_flat,fd);
-    $display ("pkt hdr bits len =%d", return_value );
-    $display ("%h", pcap_pkt_hdr_flat );
-    //assign pcap_pkt_hdr_mem = pcap_pkt_hdr_flat;
+    $display ("pkt hdr bits len =%d", return_value);
 
     $fclose(fd);
 
-    $display ("magic =%h", pcap_file_hdr_flat[191:160]);
-    $display ("verson_major =%h", pcap_file_hdr_mem.version_major);
-    $display ("verson_mnor =%h", pcap_file_hdr_mem.version_minor);
-    $display ("thiszone =%h", pcap_file_hdr_mem.thiszone);
-    $display ("sigfigs =%h", pcap_file_hdr_mem.sigfigs);
-    $display ("snaplen =%h", pcap_file_hdr_flat[63:32]);
-    $display ("linktype =%h", pcap_file_hdr_flat[31:00]);
-    
-    $display ("tv_sec =%d", pcap_pkt_hdr_mem.tv_sec);
-    $display ("tv_usec =%d", pcap_pkt_hdr_mem.tv_usec);
-    $display ("caplen =%d", pcap_pkt_hdr_mem.caplen);
-    $display ("len =%d", pcap_pkt_hdr_mem.len);
+    $display ("magic =%h", pcap_file_hdr_flat[0]);
+    $display ("snaplen =%h", pcap_file_hdr_flat[4]);
+    $display ("linktype =%h", pcap_file_hdr_flat[5]);
 
-    pcap_payload_len = pcap_pkt_hdr_flat[31:0];
-    pcap_payload_end_addr =  pcap_payload_offset + pcap_payload_offset;
+    temp = pcap_pkt_hdr_flat[3];
+    payload_len = temp[31:24] ;
 
-    #150;
-    $display ("2");
-    for ( i = pcap_payload_offset; i < pcap_payload_end_addr ; i = i + 1) begin 
+    temp = pcap_payload_offset + payload_len;
+
+    $display ("pcap_payload_len = %h", payload_len);
+
+    #150; // push the data into the eth_ram 
+    $display ("state 2");
+    for ( i = pcap_payload_offset; i < temp ; i = i + 1) begin 
         repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
         $display ("ram_dp_inp_data %h", tb_data);
     end
 
-    #50;
-    $display ("3");
+    #50; // provide signals to the ethernet packet 
+    $display ("state 3");
     $finish;
 end
 
