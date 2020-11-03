@@ -56,8 +56,10 @@ integer errorno;
 reg [225*8:1] err_str;
 reg [DATA_WIDTH-1:0] temp_mem [1500];
 reg [DATA_WIDTH-1:0] tb_data;
+reg [DATA_WIDTH-1:0] tb_data_out;
 
-integer i;
+reg [31:0] i;
+reg [31:0] j;
 
 //#instantion of the ram modules
 //ram where the incoming packets are stored
@@ -180,59 +182,77 @@ initial begin
     we_to_eth_ram  = 0; 
 
     #20;
-    $display ("state 0");
+    $display (" tb: state 0");
     fd = $fopen("../gen_pcap/ecpri.pcap","rb"); 
     if ( fd ) begin 
-        $display ("pcap file was opened");
+        $display (" tb: pcap file was opened");
         fdw = $fopen("cp_ecpri.pcap","wb"); 
     end else begin
         errorno = $ferror(fd, err_str);
-        $display ("pcap file could not be opened %s", err_str);
+        $display (" tb: pcap file could not be opened %s", err_str);
         $finish; // end simulation
     end 
     eof = $fread(temp_mem,fd);
     $fclose (fd);
-    $display ("File closed");
+    $display (" tb: File closed");
     
     #50;
-    $display ("state 1");
+    $display (" tb: state 1");
     pcap_file_hdr_len = $bits(pcap_file_hdr);
     pcap_pkt_hdr_len = $bits(pcap_pkt_hdr);
     $display( "Size of pcap global header = %d %d", pcap_file_hdr_len,  pcap_file_hdr_len/8);
     $display( "Size of per packet header = %d %d", pcap_pkt_hdr_len, pcap_pkt_hdr_len/8);
 
     pcap_payload_offset = pcap_file_hdr_len/8 + pcap_pkt_hdr_len/8;
-    $display( "payload offet = %d", pcap_payload_offset);
+    $display("tb: payload offet = %d", pcap_payload_offset);
 
     fd = $fopen("../gen_pcap/ecpri.pcap","rb"); 
     return_value = $fread(pcap_file_hdr_flat,fd);
-    $display ("file hdr bits len =%d", return_value);
+    $display (" tb: file hdr bits len =%d", return_value);
 
     return_value = $fread(pcap_pkt_hdr_flat,fd);
-    $display ("pkt hdr bits len =%d", return_value);
+    $display (" tb: pkt hdr bits len =%d", return_value);
 
     $fclose(fd);
 
-    $display ("magic =%h", pcap_file_hdr_flat[0]);
-    $display ("snaplen =%h", pcap_file_hdr_flat[4]);
-    $display ("linktype =%h", pcap_file_hdr_flat[5]);
+    $display (" tb: magic =%h", pcap_file_hdr_flat[0]);
+    $display (" tb: snaplen =%h", pcap_file_hdr_flat[4]);
+    $display (" tb: linktype =%h", pcap_file_hdr_flat[5]);
 
     temp = pcap_pkt_hdr_flat[3];
     payload_len = temp[31:24] ;
 
     temp = pcap_payload_offset + payload_len;
 
-    $display ("pcap_payload_len = %h", payload_len);
+    $display (" tb: pcap_payload_len = %h", payload_len);
 
-    #150; // push the data into the eth_ram 
-    $display ("state 2");
+    #50; // push the data into the eth_ram 
+    $display (" tb: state 2");
     for ( i = pcap_payload_offset; i < temp ; i = i + 1) begin 
         repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
-        $display ("ram_dp_inp_data %h", tb_data);
+        $display (" tb: ram_dp_inp_data %h", tb_data);
     end
 
-    #50; // provide signals to the ethernet packet 
-    $display ("state 3");
+    #50; // check the data is in the eth_ram 
+    $display (" tb: state 3");
+    for ( j = 0; j < payload_len ; j = j + 1) begin 
+        $display (" ram internal mem[%d] = %h", j, ram_recv_eth_packet.mem[j]);
+    end
+
+    #50 // reset the epcri_rx module
+    $display (" tb: state 4");
+    repeat (1) @(posedge clk) reset = 1;
+
+    #50 
+    repeat (1) @(posedge clk) reset = 0;
+
+    #50; // provide signals to the ecpri_rx module 
+    $display (" tb: state 4");
+    for ( i = 0 ; i < payload_len; i = i + 1) begin 
+        repeat(1) @(posedge clk) recv_pkt=1; cs_1 <= 1;
+        $display (" tb: ram_dp_inp_data %h", data_ecpri_rx_2_eth_ram);
+    end
+
     $finish;
 end
 
