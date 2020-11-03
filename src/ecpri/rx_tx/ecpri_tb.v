@@ -180,6 +180,8 @@ initial begin
     reset = 0;
     addr_to_eth_ram = 0;
     we_to_eth_ram  = 0; 
+    i=0;
+    j=0;
 
     #20;
     $display (" tb: state 0");
@@ -229,16 +231,17 @@ initial begin
     #50; // push the data into the eth_ram 
     $display (" tb: state 2");
     for ( i = pcap_payload_offset; i < temp ; i = i + 1) begin 
-        repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i];
+        repeat(1) @(posedge clk) addr_to_eth_ram = j; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i]; j = j + 1;
         $display (" tb: ram_dp_inp_data %h", tb_data);
     end
 
-    #50; // check the data is in the eth_ram 
+    #350; // check the data is in the eth_ram 
     $display (" tb: state 3");
     for ( j = 0; j < payload_len ; j = j + 1) begin 
         $display (" ram internal mem[%d] = %h", j, ram_recv_eth_packet.mem[j]);
     end
 
+  /*  
     #50 // reset the epcri_rx module
     $display (" tb: state 4");
     repeat (1) @(posedge clk) reset = 1;
@@ -252,6 +255,7 @@ initial begin
         repeat(1) @(posedge clk) recv_pkt=1; cs_1 <= 1;
         $display (" tb: ram_dp_inp_data %h", data_ecpri_rx_2_eth_ram);
     end
+    */
 
     $finish;
 end
