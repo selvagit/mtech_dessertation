@@ -35,7 +35,7 @@ output reg oe_0;
 
 // port to transfer, unused port in current implementation 
 output reg [ADDR_WIDTH-1:0] addr_1;
-output reg [DATA_WIDTH-1:0] data_1;
+input wire [DATA_WIDTH-1:0] data_1;
 output reg we_1;
 output reg oe_1;
 
@@ -83,7 +83,7 @@ parameter  raise_tx_resp = 12;
 // always block to update state 
 always @(posedge clk or posedge reset) begin   
     if (reset) begin      
-        $display("doing reset");
+        //$display(" ecpri_rx:doing reset");
         state <= reset_rx; 
         inp_addr <= 0;
         payload_len <= 0;
@@ -97,7 +97,6 @@ always @(posedge clk or posedge reset) begin
         we_0 <=0; 
         oe_0 <=0; 
         addr_1 <= 0;
-        data_1 <= 0;
         we_1 <= 0;
         oe_1 <= 0;
         addr_2 <= 0;
@@ -106,7 +105,7 @@ always @(posedge clk or posedge reset) begin
         oe_2 <= 0;
     end
     else begin
-        $display("no_reset");
+        //$display(" ecpri_rx:no_reset");
         if ( recv_pkt == 1'b1 ) ; begin
             state <= nextstate; 
 
@@ -116,6 +115,7 @@ always @(posedge clk or posedge reset) begin
             addr_0 <= addr_0 + 1; 
             data_0 <= data_1;
 
+            oe_1 <= 1;
         end
     end
 end
@@ -126,76 +126,74 @@ end
 always @(state)  begin
     case (state)
         reset_rx :begin 
-            $display("only on reset_rx");
+            //
         end
         cpri_hdr :begin
-            $display("only on cpri_hdr");
-            oe_1 = 1;
+            
 		end
         cpri_type :begin
 		   
-            $display("only on cpri_type");
+            
 		end
         read_id :begin
 		   
-            $display("only on read_id");
+            
 		end
         read_mem :begin
 		   
-            $display("only on read_mem");
+            
 		end
         read_payload :begin
 		   
-            $display("only on read_payload");
+            
 		end
         raise_rx_resp :begin
 		   
-            $display("only on raise_rx_resp");
+            
 		end
         write_id :begin
 		   
-            $display("only on write_id");
+            
 		end
         write_mem :begin
 		   
-            $display("only on write_mem");
+            
 		end
         write_payload :begin
 		   
-            $display("only on write_payload");
+            
 		end
         write_to_mem :begin
 		   
-            $display("only on write_to_meme");
+            
 		end
         raise_tx_resp :begin
 		   
-            $display("only on raise_tx_resp");
+            
      end
     endcase
 end	
 
 // always block to compute nextstate 
 always @(clk or state or recv_pkt) begin    
-    nextstate <= reset_rx;     
-    inp_d  <= 0;
     case (state)
         reset_rx: begin
-            $display("reset_rx");
+            //
             if (recv_pkt) begin 
                 nextstate <= cpri_hdr;
             end
         end
 
         cpri_hdr: begin  // check the ecpri write flag is set 
-            $display("cpri_hdr");
+            
             if (inp_d == 8'h10) begin         
                 nextstate <= cpri_type;
+                
             end
         end
 
         cpri_type: begin
-            $display("cpri_type");
+            
             if (inp_d == 8'h10) begin        // check the write flag
                 nextstate <= write_id;
             end
@@ -205,21 +203,21 @@ always @(clk or state or recv_pkt) begin
         end
 
         read_id:  begin 
-            $display("read_id");
+            
             if (inp_d == 8'h00) begin
                 nextstate <= read_mem;
             end
         end
 
         read_mem : begin
-            $display("read_mem");
+            
             nextstate <= read_payload;
             dst_addr <= inp_d;
             resp_payload_len <= payload_len;
         end
 
         read_payload : begin
-            $display("read_payload");
+            
             if (inp_addr == 8'h12) begin
                 payload_len  <= inp_d;
                 nextstate <= raise_rx_resp;
@@ -227,17 +225,17 @@ always @(clk or state or recv_pkt) begin
         end
 
         raise_rx_resp : begin
-            $display("raise_rx_resp");
+            
             send_read_resp <= 1;
             nextstate <= reset_rx;
         end
 
         write_id : begin
-            $display("write_id");
+            
         end
 
         write_mem : begin
-            $display("write_mem");
+            
             // get the dst_address memory address 
             if (inp_addr == 8'h13) begin
                 dst_addr <= inp_d;
@@ -246,7 +244,7 @@ always @(clk or state or recv_pkt) begin
         end
 
         write_payload : begin
-            $display("write_payload");
+            
             // get the length of the payload 
             if (inp_addr == 8'h12) begin
                 payload_len  <= inp_d;
@@ -254,7 +252,7 @@ always @(clk or state or recv_pkt) begin
         end
 
         write_to_mem : begin
-            $display("write_to_mem");
+            
             // copy the payload 
             if ( payload_len > 8'h0) begin
                 dst_addr <= inp_d;
@@ -266,13 +264,13 @@ always @(clk or state or recv_pkt) begin
         end
 
         raise_tx_resp : begin
-            $display("raise_tx_resp");
+            
             send_write_resp <= 1;
             nextstate <= reset_rx;
         end
 
         default : begin
-            $display("default");
+            
         end
     endcase
 end

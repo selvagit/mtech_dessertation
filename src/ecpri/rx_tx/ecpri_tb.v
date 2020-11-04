@@ -241,21 +241,25 @@ initial begin
         $display (" ram internal mem[%d] = %h", j, ram_recv_eth_packet.mem[j]);
     end
 
-  /*  
-    #50 // reset the epcri_rx module
+    #50 ; // read the ram data port 0
+    for ( i = 0; i < payload_len ; i = i + 1) begin 
+        repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 0; cs_0 = 1; oe_to_eth_ram = 1; tb_data = data_to_eth_ram;
+        $display (" tb: ram_dp_out_data %h", tb_data);
+    end
+
+    #100 // reset the epcri_rx module
     $display (" tb: state 4");
     repeat (1) @(posedge clk) reset = 1;
 
     #50 
+    $display (" tb: state 5");
     repeat (1) @(posedge clk) reset = 0;
 
     #50; // provide signals to the ecpri_rx module 
-    $display (" tb: state 4");
+    $display (" tb: state 6");
     for ( i = 0 ; i < payload_len; i = i + 1) begin 
-        repeat(1) @(posedge clk) recv_pkt=1; cs_1 <= 1;
-        $display (" tb: ram_dp_inp_data %h", data_ecpri_rx_2_eth_ram);
+        repeat(1) @(posedge clk) recv_pkt <= 1; cs_1 <= 1; cs_0 <= 0; oe_to_eth_ram <= 0;    
     end
-    */
 
     $finish;
 end
@@ -263,8 +267,15 @@ end
 // dump the output 
 initial begin
     $dumpfile("ecpri.vcd");
+
     $dumpvars(0,tb_ecpri);
     $dumpvars(0,ram_recv_eth_packet);
+    $dumpvars(0,dut_ecpri_rx);
+    $dumpvars(0,ram_cpri_payload);
+
+    $monitor ("data_1 = %h address_1 = %h data_1_out = %h", ram_recv_eth_packet.data_1 , ram_recv_eth_packet.address_1, ram_recv_eth_packet.data_1_out);
+    $monitor ("we_1 = %h oe_1 = %h addr_1 = %h data_1 = %h inp_d = %h state = %d nextstate =%d", 
+        dut_ecpri_rx.we_1, dut_ecpri_rx.oe_1, dut_ecpri_rx.addr_1, dut_ecpri_rx.data_1, dut_ecpri_rx.inp_d, dut_ecpri_rx.state, dut_ecpri_rx.nextstate);
 end
 
 endmodule
