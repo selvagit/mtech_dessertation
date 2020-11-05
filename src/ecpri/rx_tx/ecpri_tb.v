@@ -185,7 +185,7 @@ initial begin
 
     #20;
     $display (" tb: state 0");
-    fd = $fopen("../gen_pcap/ecpri.pcap","rb"); 
+    fd = $fopen("../gen_pcap/remote_memory_access.pcap","rb"); 
     if ( fd ) begin 
         $display (" tb: pcap file was opened");
         fdw = $fopen("cp_ecpri.pcap","wb"); 
@@ -232,9 +232,10 @@ initial begin
     $display (" tb: state 2");
     for ( i = pcap_payload_offset; i < temp ; i = i + 1) begin 
         repeat(1) @(posedge clk) addr_to_eth_ram = j; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i]; j = j + 1;
-        $display (" tb: ram_dp_inp_data %h", tb_data);
+        //$display (" tb: ram_dp_inp_data %h", tb_data);
     end
 
+    /*
     #350; // check the data is in the eth_ram 
     $display (" tb: state 3");
     for ( j = 0; j < payload_len ; j = j + 1) begin 
@@ -246,6 +247,7 @@ initial begin
         repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 0; cs_0 = 1; oe_to_eth_ram = 1; tb_data = data_to_eth_ram;
         $display (" tb: ram_dp_out_data %h", tb_data);
     end
+    */
 
     #100 // reset the epcri_rx module
     $display (" tb: state 4");
@@ -275,7 +277,8 @@ initial begin
 
     $monitor ("data_1 = %h address_1 = %h data_1_out = %h", ram_recv_eth_packet.data_1 , ram_recv_eth_packet.address_1, ram_recv_eth_packet.data_1_out);
     $monitor ("we_1 = %h oe_1 = %h addr_1 = %h data_1 = %h inp_d = %h state = %d nextstate =%d", 
-        dut_ecpri_rx.we_1, dut_ecpri_rx.oe_1, dut_ecpri_rx.addr_1, dut_ecpri_rx.data_1, dut_ecpri_rx.inp_d, dut_ecpri_rx.state, dut_ecpri_rx.nextstate);
+        dut_ecpri_rx.we_1, dut_ecpri_rx.oe_1, dut_ecpri_rx.addr_1, dut_ecpri_rx.data_1, dut_ecpri_rx.inp_d, dut_ecpri_rx.state, dut_ecpri_rx.next_state);
+    //$monitor ("cpri_marker = %h ", dut_ecpri_rx.cpri_marker);
 end
 
 endmodule

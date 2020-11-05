@@ -51,10 +51,13 @@ reg [ADDR_WIDTH-1:0] dst_addr;
 
 reg [ADDR_WIDTH-1:0] payload_len;
 reg [DATA_WIDTH-1:0] inp_d;     
+reg [DATA_WIDTH-1:0] prev_d;     
 
 reg [7:0] state;
-reg [7:0] nextstate;     
+reg [7:0] next_state;     
 reg [7:0] info_to_rx;
+
+wire [15:0] cpri_marker;
 
 //-------------- Ethernet header offset and length ----------------------- 
 parameter  eth_hdr_offset = 0;
@@ -103,14 +106,15 @@ always @(posedge clk or posedge reset) begin
         data_2 <= 0;
         we_2 <= 0;
         oe_2 <= 0;
+        next_state <= reset_rx;
     end
     else begin
-        //$display(" ecpri_rx:no_reset");
         if ( recv_pkt == 1'b1 ) ; begin
-            state <= nextstate; 
+            state <= next_state; 
 
             addr_1 <= addr_1 + 1;  
             inp_d  <= data_1; 
+            prev_d <= inp_d;
 
             addr_0 <= addr_0 + 1; 
             data_0 <= data_1;
@@ -152,9 +156,10 @@ always @(state)  begin
             
 		end
         write_id :begin
-		   
-            
+		   we_2 <= 1; 
+           oe_2 <= 0;
 		end
+
         write_mem :begin
 		   
             
@@ -174,44 +179,44 @@ always @(state)  begin
     endcase
 end	
 
-// always block to compute nextstate 
+assign cpri_marker = (prev_d << 8) | inp_d ;
+
+// always block to compute next_state 
 always @(clk or state or recv_pkt) begin    
     case (state)
         reset_rx: begin
             //
             if (recv_pkt) begin 
-                nextstate <= cpri_hdr;
+                next_state <= cpri_hdr;
             end
         end
 
         cpri_hdr: begin  // check the ecpri write flag is set 
-            
-            if (inp_d == 8'h10) begin         
-                nextstate <= cpri_type;
-                
+            if ( cpri_marker == 16'haefe) begin         
+                next_state <= cpri_type;
             end
         end
 
         cpri_type: begin
             
             if (inp_d == 8'h10) begin        // check the write flag
-                nextstate <= write_id;
+                next_state <= write_id;
             end
             if (inp_d == 8'h00) begin        // check the read flag
-                nextstate <= read_id;
+                next_state <= read_id;
             end
         end
 
         read_id:  begin 
             
             if (inp_d == 8'h00) begin
-                nextstate <= read_mem;
+                next_state <= read_mem;
             end
         end
 
         read_mem : begin
             
-            nextstate <= read_payload;
+            next_state <= read_payload;
             dst_addr <= inp_d;
             resp_payload_len <= payload_len;
         end
@@ -220,14 +225,14 @@ always @(clk or state or recv_pkt) begin
             
             if (inp_addr == 8'h12) begin
                 payload_len  <= inp_d;
-                nextstate <= raise_rx_resp;
+                next_state <= raise_rx_resp;
             end
         end
 
         raise_rx_resp : begin
             
             send_read_resp <= 1;
-            nextstate <= reset_rx;
+            next_state <= reset_rx;
         end
 
         write_id : begin
@@ -266,7 +271,7 @@ always @(clk or state or recv_pkt) begin
         raise_tx_resp : begin
             
             send_write_resp <= 1;
-            nextstate <= reset_rx;
+            next_state <= reset_rx;
         end
 
         default : begin
