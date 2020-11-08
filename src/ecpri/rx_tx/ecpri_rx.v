@@ -46,10 +46,6 @@ output reg we_2;
 output reg oe_2;
 
 //--------------Internal variables---------------- 
-reg [ADDR_WIDTH-1:0] inp_addr;
-reg [ADDR_WIDTH-1:0] dst_addr;     
-
-reg [ADDR_WIDTH-1:0] payload_len;
 reg [DATA_WIDTH-1:0] inp_d;     
 reg [DATA_WIDTH-1:0] prev_d;     
 
@@ -57,7 +53,18 @@ reg [7:0] state;
 reg [7:0] next_state;     
 reg [7:0] info_to_rx;
 
-wire [15:0] cpri_marker;
+reg [7:0] ecpri_hdr_offset;
+reg [7:0] ecpri_remote_mem_hdr_offset;
+
+reg [7:0] ecpri_ver;
+reg [7:0] ecpri_msg_type;
+reg [15:0] ecpri_payload_len;
+
+reg [7:0] ecpri_remote_acc_id;
+reg [7:0] ecpri_rm_rw_req_resp;
+reg [7:0] ecpri_rm_ele_id;
+reg [39:0] ecpri_rm_addr;
+reg [15:0] ecpri_rm_len;
 
 //-------------- Ethernet header offset and length ----------------------- 
 parameter  eth_hdr_offset = 0;
@@ -70,17 +77,17 @@ parameter  vlan_offset = 0;
 
 //-------------- ecpri state machine ------------------------------ 
 parameter  reset_rx = 0;
-parameter  cpri_hdr = 1;
-parameter  cpri_type = 2;
-parameter  read_id = 3;
-parameter  read_mem = 4;
-parameter  read_payload = 6;
-parameter  raise_rx_resp = 7;
-parameter  write_id = 8;
-parameter  write_mem = 9;
-parameter  write_payload = 10;
-parameter  write_to_mem = 11;
-parameter  raise_tx_resp = 12;
+parameter  find_cpri_hdr = 1;
+parameter  read_cpri_hdr = 2;
+parameter  read_cpri_remote_mem_hdr = 3;
+parameter  cpri_type = 4;
+parameter  cpri_remote_memory = 5;
+parameter  read_payload = 8;
+parameter  raise_rx_resp = 9;
+parameter  write_id = 10;
+parameter  write_mem = 11;
+parameter  write_to_mem = 13;
+parameter  raise_tx_resp = 14;
 
 //-------------- ecpri state machine ------------------------------ 
 // always block to update state 
@@ -88,8 +95,6 @@ always @(posedge clk or posedge reset) begin
     if (reset) begin      
         //$display(" ecpri_rx:doing reset");
         state <= reset_rx; 
-        inp_addr <= 0;
-        payload_len <= 0;
         send_write_resp <= 0;
         send_read_resp <= 0;
         send_write_resp <=0; 
@@ -107,17 +112,14 @@ always @(posedge clk or posedge reset) begin
         we_2 <= 0;
         oe_2 <= 0;
         next_state <= reset_rx;
+        ecpri_hdr_offset  <= 0;
     end
     else begin
         if ( recv_pkt == 1'b1 ) ; begin
             state <= next_state; 
 
             addr_1 <= addr_1 + 1;  
-            inp_d  <= data_1; 
-            prev_d <= inp_d;
-
-            addr_0 <= addr_0 + 1; 
-            data_0 <= data_1;
+            prev_d <= data_1; 
 
             oe_1 <= 1;
         end
@@ -127,158 +129,138 @@ end
 // always block for doing the state activity
 // increment the address in every state to get the data 
 // for every cycle 
-always @(state)  begin
-    case (state)
+always @(posedge state)  begin
+    case (state) 
         reset_rx :begin 
-            //
         end
-        cpri_hdr :begin
-            
-		end
-        cpri_type :begin
-		   
-            
-		end
-        read_id :begin
-		   
-            
-		end
-        read_mem :begin
-		   
-            
-		end
+
+        find_cpri_hdr: begin
+            we_0 <= 1;
+            oe_0 <= 0;
+
+            addr_0 <= addr_0 + 1; 
+            data_0 <= data_1;
+        end
+
         read_payload :begin
-		   
-            
-		end
-        raise_rx_resp :begin
-		   
-            
-		end
-        write_id :begin
-		   we_2 <= 1; 
-           oe_2 <= 0;
 		end
 
-        write_mem :begin
-		   
-            
+        raise_rx_resp :begin
 		end
-        write_payload :begin
-		   
-            
-		end
+
         write_to_mem :begin
-		   
-            
+            we_2 <= 1;
+            oe_2 <= 0;
 		end
+
         raise_tx_resp :begin
-		   
-            
-     end
+        end
     endcase
 end	
 
-assign cpri_marker = (prev_d << 8) | inp_d ;
-
 // always block to compute next_state 
-always @(clk or state or recv_pkt) begin    
+always @(posedge clk) begin    
     case (state)
         reset_rx: begin
-            //
             if (recv_pkt) begin 
-                next_state <= cpri_hdr;
+                next_state <= find_cpri_hdr;
             end
         end
 
-        cpri_hdr: begin  // check the ecpri write flag is set 
-            if ( cpri_marker == 16'haefe) begin         
-                next_state <= cpri_type;
+        find_cpri_hdr: begin  // check the ecpri write flag is set 
+            if ( ((prev_d << 8) | data_1) == 16'haefe) begin         
+                next_state <= read_cpri_hdr;
             end
         end
 
-        cpri_type: begin
-            
-            if (inp_d == 8'h10) begin        // check the write flag
-                next_state <= write_id;
+        read_cpri_hdr: begin
+            if (ecpri_hdr_offset == 8'h0) begin
+               ecpri_ver <= data_1;
+            end else 
+
+            if (ecpri_hdr_offset == 8'h1) begin
+               ecpri_msg_type <= data_1;
+            end else 
+
+            if (ecpri_hdr_offset == 8'h2) begin
+                ecpri_payload_len [15:8] <= data_1;
+            end else
+
+            if (ecpri_hdr_offset == 8'h3) begin
+                ecpri_payload_len [7:0] <= data_1;
+                next_state <= read_cpri_remote_mem_hdr;
+                ecpri_remote_mem_hdr_offset <= 0;
             end
-            if (inp_d == 8'h00) begin        // check the read flag
-                next_state <= read_id;
-            end
+
+            ecpri_hdr_offset <= ecpri_hdr_offset + 1;
         end
 
-        read_id:  begin 
-            
-            if (inp_d == 8'h00) begin
-                next_state <= read_mem;
-            end
-        end
+        read_cpri_remote_mem_hdr: begin
+            if (ecpri_msg_type != 8'h4) begin
+              next_state <= reset_rx;
+            end else begin
+                if (ecpri_remote_mem_hdr_offset == 8'h0) begin        
+                    ecpri_remote_acc_id <= data_1;
+                end
 
-        read_mem : begin
-            
-            next_state <= read_payload;
-            dst_addr <= inp_d;
-            resp_payload_len <= payload_len;
+                if (ecpri_remote_mem_hdr_offset == 8'h1) begin        
+                    ecpri_rm_rw_req_resp <= data_1;
+                end
+
+                if (ecpri_remote_mem_hdr_offset == 8'h2) begin        
+                    ecpri_rm_ele_id <= data_1;
+                end
+
+                if ((ecpri_remote_mem_hdr_offset > 8'h2)  &&  (ecpri_remote_mem_hdr_offset < 8'ha) ) begin        
+                    ecpri_rm_ele_id <= (ecpri_rm_ele_id << 8'h8) | data_1;
+                end
+
+                if ((ecpri_remote_mem_hdr_offset == 8'ha)  &&  (ecpri_remote_mem_hdr_offset == 8'hb)) begin        
+                    ecpri_rm_len <= (ecpri_rm_len << 8'h8) | data_1;
+                end
+
+                if (ecpri_remote_mem_hdr_offset == 8'hb) begin
+                    if ( ecpri_rm_rw_req_resp == 8'h0) begin
+                        next_state <= read_payload;
+                    end else begin
+                        next_state <= write_to_mem; 
+                        addr_2 <= 0; 
+                    end
+                end
+
+                ecpri_remote_mem_hdr_offset  <= ecpri_remote_mem_hdr_offset + 1;
+            end
         end
 
         read_payload : begin
-            
-            if (inp_addr == 8'h12) begin
-                payload_len  <= inp_d;
-                next_state <= raise_rx_resp;
-            end
+            resp_payload_len  <= ecpri_rm_len[7:0] ;
+            next_state <= raise_rx_resp;
         end
 
         raise_rx_resp : begin
-            
             send_read_resp <= 1;
             next_state <= reset_rx;
         end
 
-        write_id : begin
-            
-        end
-
-        write_mem : begin
-            
-            // get the dst_address memory address 
-            if (inp_addr == 8'h13) begin
-                dst_addr <= inp_d;
-                resp_payload_len <= payload_len;
-            end
-        end
-
-        write_payload : begin
-            
-            // get the length of the payload 
-            if (inp_addr == 8'h12) begin
-                payload_len  <= inp_d;
-            end
-        end
-
         write_to_mem : begin
-            
             // copy the payload 
-            if ( payload_len > 8'h0) begin
-                dst_addr <= inp_d;
-                payload_len <= payload_len - 1;
-                dst_addr <= dst_addr + 1;
-                data_2 <= 'h1;
-                data_0 <= 'h1;
+            if ( resp_payload_len > 8'h0) begin
+                resp_payload_len <= resp_payload_len - 1;
+                addr_2 <= addr_2 + 1;
             end
         end
 
         raise_tx_resp : begin
-            
             send_write_resp <= 1;
             next_state <= reset_rx;
         end
 
         default : begin
-            
         end
     endcase
 end
 
 endmodule //ecpri_rx
 
+
+        
