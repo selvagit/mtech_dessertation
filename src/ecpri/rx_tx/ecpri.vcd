@@ -1,5 +1,5 @@
 $date
-	Fri Nov 13 00:04:45 2020
+	Fri Nov 13 00:25:25 2020
 $end
 $version
 	Icarus Verilog
@@ -62,17 +62,17 @@ $var reg 16 O addr_1 [15:0] $end
 $var reg 16 P addr_2 [15:0] $end
 $var reg 8 Q data_0 [7:0] $end
 $var reg 8 R data_2 [7:0] $end
-$var reg 8 S ecpri_hdr_offset [7:0] $end
-$var reg 8 T ecpri_msg_type [7:0] $end
-$var reg 16 U ecpri_payload_len [15:0] $end
-$var reg 8 V ecpri_remote_acc_id [7:0] $end
-$var reg 8 W ecpri_remote_mem_hdr_offset [7:0] $end
-$var reg 48 X ecpri_rm_addr [47:0] $end
-$var reg 16 Y ecpri_rm_ele_id [15:0] $end
-$var reg 16 Z ecpri_rm_len [15:0] $end
-$var reg 8 [ ecpri_rm_rw_req_resp [7:0] $end
-$var reg 8 \ ecpri_ver [7:0] $end
-$var reg 8 ] inp_d [7:0] $end
+$var reg 8 S g_hdr_offset [7:0] $end
+$var reg 8 T g_msg_type [7:0] $end
+$var reg 16 U g_payload_len [15:0] $end
+$var reg 8 V g_ver [7:0] $end
+$var reg 8 W inp_d [7:0] $end
+$var reg 8 X l_rm_acc_id [7:0] $end
+$var reg 48 Y l_rm_addr [47:0] $end
+$var reg 16 Z l_rm_ele_id [15:0] $end
+$var reg 16 [ l_rm_len [15:0] $end
+$var reg 8 \ l_rm_mem_hdr_offset [7:0] $end
+$var reg 8 ] l_rm_rw_req_resp [7:0] $end
 $var reg 8 ^ next_state [7:0] $end
 $var reg 1 ) oe_0 $end
 $var reg 1 + oe_1 $end
@@ -951,14 +951,14 @@ b0 d
 bz .
 bz M
 bz k
-b0 Z
-b0 X
-b0 Y
 b0 [
-b0 V
+b0 Y
+b0 Z
+b0 ]
+b0 X
 b0 U
 b0 T
-b0 \
+b0 V
 b0 S
 b0 ^
 0*
@@ -1255,7 +1255,7 @@ b100 M
 b100 k
 b100 m
 b1 S
-b10000 \
+b10000 V
 b10000 -
 b10000 Q
 b10001 /
@@ -1312,7 +1312,7 @@ b10001 M
 b10001 k
 b10001 m
 b100 S
-b0 W
+b0 \
 b11 ^
 b11100 U
 b11100 -
@@ -1332,8 +1332,8 @@ b0 .
 b0 M
 b0 k
 b0 m
-b1 W
-b10001 V
+b1 \
+b10001 X
 b10001 -
 b10001 Q
 b10101 /
@@ -1352,7 +1352,7 @@ b100010 .
 b100010 M
 b100010 k
 b100010 m
-b10 W
+b10 \
 b0 -
 b0 Q
 b10110 /
@@ -1370,8 +1370,8 @@ b110011 .
 b110011 M
 b110011 k
 b110011 m
-b11 W
-b100010 Y
+b11 \
+b100010 Z
 b100010 -
 b100010 Q
 b10111 /
@@ -1389,8 +1389,8 @@ b101 .
 b101 M
 b101 k
 b101 m
-b100 W
-b10001000110011 Y
+b100 \
+b10001000110011 Z
 b110011 -
 b110011 Q
 b11000 /
@@ -1408,8 +1408,8 @@ b100 .
 b100 M
 b100 k
 b100 m
-b101 W
-b101 X
+b101 \
+b101 Y
 b101 -
 b101 Q
 b11001 /
@@ -1427,8 +1427,8 @@ b11 .
 b11 M
 b11 k
 b11 m
-b110 W
-b10100000100 X
+b110 \
+b10100000100 Y
 b100 -
 b100 Q
 b11010 /
@@ -1446,8 +1446,8 @@ b10 .
 b10 M
 b10 k
 b10 m
-b111 W
-b1010000010000000011 X
+b111 \
+b1010000010000000011 Y
 b11 -
 b11 Q
 b11011 /
@@ -1465,8 +1465,8 @@ b1 .
 b1 M
 b1 k
 b1 m
-b1000 W
-b101000001000000001100000010 X
+b1000 \
+b101000001000000001100000010 Y
 b10 -
 b10 Q
 b11100 /
@@ -1484,8 +1484,8 @@ b0 .
 b0 M
 b0 k
 b0 m
-b1001 W
-b10100000100000000110000001000000001 X
+b1001 \
+b10100000100000000110000001000000001 Y
 b1 -
 b1 Q
 b11101 /
@@ -1499,8 +1499,8 @@ b11011 8
 #2140000
 04
 #2150000
-b1010 W
-b1010000010000000011000000100000000100000000 X
+b1010 \
+b1010000010000000011000000100000000100000000 Y
 b0 -
 b0 Q
 b11110 /
@@ -1518,7 +1518,7 @@ b10000 .
 b10000 M
 b10000 k
 b10000 m
-b1011 W
+b1011 \
 b11111 /
 b11111 N
 b11111 1
@@ -1533,9 +1533,9 @@ b11111111 .
 b11111111 M
 b11111111 k
 b11111111 m
-b1100 W
+b1100 \
 b1000 ^
-b10000 Z
+b10000 [
 b10000 -
 b10000 Q
 b100000 /

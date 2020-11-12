@@ -53,18 +53,18 @@ reg [7:0] state;
 reg [7:0] next_state;     
 reg [7:0] info_to_rx;
 
-reg [7:0] ecpri_hdr_offset;
-reg [7:0] ecpri_remote_mem_hdr_offset;
+reg [7:0] g_hdr_offset;
+reg [7:0] l_rm_mem_hdr_offset;
 
-reg [7:0] ecpri_ver;
-reg [7:0] ecpri_msg_type;
-reg [15:0] ecpri_payload_len;
+reg [7:0] g_ver;
+reg [7:0] g_msg_type;
+reg [15:0] g_payload_len;
 
-reg [7:0] ecpri_remote_acc_id;
-reg [7:0] ecpri_rm_rw_req_resp;
-reg [15:0] ecpri_rm_ele_id;
-reg [47:0] ecpri_rm_addr;
-reg [15:0] ecpri_rm_len;
+reg [7:0] l_rm_acc_id;
+reg [7:0] l_rm_rw_req_resp;
+reg [15:0] l_rm_ele_id;
+reg [47:0] l_rm_addr;
+reg [15:0] l_rm_len;
 
 //-------------- Ethernet header offset and length ----------------------- 
 parameter  eth_hdr_offset = 0;
@@ -112,16 +112,16 @@ always @(posedge clk or posedge reset) begin
         we_2 <= 0;
         oe_2 <= 0;
         next_state <= reset_rx;
-        ecpri_hdr_offset  <= 0;
-        ecpri_ver <= 0;
-        ecpri_msg_type <= 0;
-        ecpri_payload_len <= 0;
+        g_hdr_offset  <= 0;
+        g_ver <= 0;
+        g_msg_type <= 0;
+        g_payload_len <= 0;
 
-        ecpri_remote_acc_id <= 0;
-        ecpri_rm_rw_req_resp <= 0;
-        ecpri_rm_ele_id <= 0;
-        ecpri_rm_addr <= 0;
-        ecpri_rm_len <= 0;
+        l_rm_acc_id <= 0;
+        l_rm_rw_req_resp <= 0;
+        l_rm_ele_id <= 0;
+        l_rm_addr <= 0;
+        l_rm_len <= 0;
     end
     else begin
         if ( recv_pkt == 1'b1 ) ; begin
@@ -183,53 +183,53 @@ always @(posedge clk) begin
         end
 
         read_cpri_hdr: begin
-            if (ecpri_hdr_offset == 8'h0) begin
-               ecpri_ver <= data_1;
+            if (g_hdr_offset == 8'h0) begin
+               g_ver <= data_1;
             end else 
 
-            if (ecpri_hdr_offset == 8'h1) begin
-               ecpri_msg_type <= data_1;
+            if (g_hdr_offset == 8'h1) begin
+               g_msg_type <= data_1;
             end else 
 
-            if (ecpri_hdr_offset == 8'h2) begin
-                ecpri_payload_len [15:8] <= data_1;
+            if (g_hdr_offset == 8'h2) begin
+                g_payload_len [15:8] <= data_1;
             end else
 
-            if (ecpri_hdr_offset == 8'h3) begin
-                ecpri_payload_len [7:0] <= data_1;
+            if (g_hdr_offset == 8'h3) begin
+                g_payload_len [7:0] <= data_1;
                 next_state <= read_cpri_remote_mem_hdr;
-                ecpri_remote_mem_hdr_offset <= 0;
+                l_rm_mem_hdr_offset <= 0;
             end
 
-            ecpri_hdr_offset <= ecpri_hdr_offset + 1;
+            g_hdr_offset <= g_hdr_offset + 1;
         end
 
         read_cpri_remote_mem_hdr: begin
-            if (ecpri_msg_type != 8'h4) begin
+            if (g_msg_type != 8'h4) begin
               next_state <= reset_rx;
             end else begin
-                if (ecpri_remote_mem_hdr_offset == 8'h0) begin        
-                    ecpri_remote_acc_id <= data_1;
+                if (l_rm_mem_hdr_offset == 8'h0) begin        
+                    l_rm_acc_id <= data_1;
                 end
 
-                if (ecpri_remote_mem_hdr_offset == 8'h1) begin        
-                    ecpri_rm_rw_req_resp <= data_1;
+                if (l_rm_mem_hdr_offset == 8'h1) begin        
+                    l_rm_rw_req_resp <= data_1;
                 end
 
-                if ((ecpri_remote_mem_hdr_offset == 8'h2) || (ecpri_remote_mem_hdr_offset == 8'h3)) begin        
-                    ecpri_rm_ele_id <= (ecpri_rm_ele_id << 8'h8) | data_1;
+                if ((l_rm_mem_hdr_offset == 8'h2) || (l_rm_mem_hdr_offset == 8'h3)) begin        
+                    l_rm_ele_id <= (l_rm_ele_id << 8'h8) | data_1;
                 end
 
-                if ((ecpri_remote_mem_hdr_offset > 8'h3)  &&  (ecpri_remote_mem_hdr_offset < 8'ha) ) begin        
-                    ecpri_rm_addr <= (ecpri_rm_addr << 8'h8) | data_1;
+                if ((l_rm_mem_hdr_offset > 8'h3)  &&  (l_rm_mem_hdr_offset < 8'ha) ) begin        
+                    l_rm_addr <= (l_rm_addr << 8'h8) | data_1;
                 end
 
-                if ((ecpri_remote_mem_hdr_offset == 8'ha)  ||  (ecpri_remote_mem_hdr_offset == 8'hb)) begin        
-                    ecpri_rm_len <= (ecpri_rm_len << 8'h8) | data_1;
+                if ((l_rm_mem_hdr_offset == 8'ha)  ||  (l_rm_mem_hdr_offset == 8'hb)) begin        
+                    l_rm_len <= (l_rm_len << 8'h8) | data_1;
                 end
 
-                if (ecpri_remote_mem_hdr_offset == 8'hb) begin
-                    if ( ecpri_rm_rw_req_resp == 8'h0) begin
+                if (l_rm_mem_hdr_offset == 8'hb) begin
+                    if ( l_rm_rw_req_resp == 8'h0) begin
                         next_state <= read_payload;
                     end else begin
                         next_state <= write_to_mem; 
@@ -237,12 +237,12 @@ always @(posedge clk) begin
                     end
                 end
 
-                ecpri_remote_mem_hdr_offset  <= ecpri_remote_mem_hdr_offset + 1;
+                l_rm_mem_hdr_offset  <= l_rm_mem_hdr_offset + 1;
             end
         end
 
         read_payload : begin
-            resp_payload_len  <= ecpri_rm_len[7:0] ;
+            resp_payload_len  <= l_rm_len[7:0] ;
             next_state <= raise_rx_resp;
         end
 
@@ -253,8 +253,8 @@ always @(posedge clk) begin
 
         write_to_mem : begin
             // copy the payload 
-            if ( ecpri_rm_len > 8'h0) begin
-                ecpri_rm_len <= ecpri_rm_len - 1;
+            if ( l_rm_len > 8'h0) begin
+                l_rm_len <= l_rm_len - 1;
                 addr_2 <= addr_2 + 1;
                 data_2 <= data_1;
             end
