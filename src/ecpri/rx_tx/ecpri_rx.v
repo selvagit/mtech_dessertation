@@ -62,8 +62,8 @@ reg [15:0] ecpri_payload_len;
 
 reg [7:0] ecpri_remote_acc_id;
 reg [7:0] ecpri_rm_rw_req_resp;
-reg [7:0] ecpri_rm_ele_id;
-reg [39:0] ecpri_rm_addr;
+reg [15:0] ecpri_rm_ele_id;
+reg [47:0] ecpri_rm_addr;
 reg [15:0] ecpri_rm_len;
 
 //-------------- Ethernet header offset and length ----------------------- 
@@ -113,6 +113,15 @@ always @(posedge clk or posedge reset) begin
         oe_2 <= 0;
         next_state <= reset_rx;
         ecpri_hdr_offset  <= 0;
+        ecpri_ver <= 0;
+        ecpri_msg_type <= 0;
+        ecpri_payload_len <= 0;
+
+        ecpri_remote_acc_id <= 0;
+        ecpri_rm_rw_req_resp <= 0;
+        ecpri_rm_ele_id <= 0;
+        ecpri_rm_addr <= 0;
+        ecpri_rm_len <= 0;
     end
     else begin
         if ( recv_pkt == 1'b1 ) ; begin
@@ -122,6 +131,9 @@ always @(posedge clk or posedge reset) begin
             prev_d <= data_1; 
 
             oe_1 <= 1;
+
+            addr_0 <= addr_0 + 1; 
+            data_0 <= data_1;
         end
     end
 end
@@ -137,9 +149,6 @@ always @(posedge state)  begin
         find_cpri_hdr: begin
             we_0 <= 1;
             oe_0 <= 0;
-
-            addr_0 <= addr_0 + 1; 
-            data_0 <= data_1;
         end
 
         read_payload :begin
@@ -160,7 +169,7 @@ end
 
 // always block to compute next_state 
 always @(posedge clk) begin    
-    case (state)
+    case (next_state)
         reset_rx: begin
             if (recv_pkt) begin 
                 next_state <= find_cpri_hdr;
@@ -207,15 +216,15 @@ always @(posedge clk) begin
                     ecpri_rm_rw_req_resp <= data_1;
                 end
 
-                if (ecpri_remote_mem_hdr_offset == 8'h2) begin        
-                    ecpri_rm_ele_id <= data_1;
-                end
-
-                if ((ecpri_remote_mem_hdr_offset > 8'h2)  &&  (ecpri_remote_mem_hdr_offset < 8'ha) ) begin        
+                if ((ecpri_remote_mem_hdr_offset == 8'h2) || (ecpri_remote_mem_hdr_offset == 8'h3)) begin        
                     ecpri_rm_ele_id <= (ecpri_rm_ele_id << 8'h8) | data_1;
                 end
 
-                if ((ecpri_remote_mem_hdr_offset == 8'ha)  &&  (ecpri_remote_mem_hdr_offset == 8'hb)) begin        
+                if ((ecpri_remote_mem_hdr_offset > 8'h3)  &&  (ecpri_remote_mem_hdr_offset < 8'ha) ) begin        
+                    ecpri_rm_addr <= (ecpri_rm_addr << 8'h8) | data_1;
+                end
+
+                if ((ecpri_remote_mem_hdr_offset == 8'ha)  ||  (ecpri_remote_mem_hdr_offset == 8'hb)) begin        
                     ecpri_rm_len <= (ecpri_rm_len << 8'h8) | data_1;
                 end
 
