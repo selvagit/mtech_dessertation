@@ -253,9 +253,10 @@ always @(posedge clk) begin
 
         write_to_mem : begin
             // copy the payload 
-            if ( resp_payload_len > 8'h0) begin
-                resp_payload_len <= resp_payload_len - 1;
+            if ( ecpri_rm_len > 8'h0) begin
+                ecpri_rm_len <= ecpri_rm_len - 1;
                 addr_2 <= addr_2 + 1;
+                data_2 <= data_1;
             end
         end
 
