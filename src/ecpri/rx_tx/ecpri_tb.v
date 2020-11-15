@@ -8,7 +8,6 @@ parameter DATA_WIDTH = 8 ;
 parameter ADDR_WIDTH = 16 ;
 
 // edge to the eth ram 
-
 reg [ADDR_WIDTH-1:0] addr_to_eth_ram;
 wire [DATA_WIDTH-1:0] data_to_eth_ram; 
 reg we_to_eth_ram, oe_to_eth_ram; 
@@ -38,10 +37,23 @@ reg [ADDR_WIDTH-1:0] addr_ecpri_tx_2_ram_cpri_payload;
 wire [DATA_WIDTH-1:0] data_ecpri_tx_2_ram_cpri_payload;
 reg we_ecpri_tx_2_ram_cpri_payload, oe_ecpri_tx_2_ram_cpri_payload; 
 
+reg [ADDR_WIDTH-1:0] addr_ecpri_tx_2_ram_cpri_packet;
+wire [DATA_WIDTH-1:0] data_ecpri_tx_2_ram_cpri_packet;
+reg we_ecpri_tx_2_ram_cpri_packet, oe_ecpri_tx_2_ram_cpri_packet; 
+
+reg [ADDR_WIDTH-1:0] addr_ecpri_tx_2_ram_eth_packet_hdr;
+wire [DATA_WIDTH-1:0] data_ecpri_tx_2_ram_eth_packet_hdr;
+reg we_ecpri_tx_2_ram_eth_packet_hdr, oe_ecpri_tx_2_ram_eth_packet_hdr; 
+
+//open wire for reslving the WARNING 
+
+reg [ADDR_WIDTH-1:0] addr_ram_cpri_packet;
+wire [DATA_WIDTH-1:0] data_ram_cpri_packet;
+reg we_ram_cpri_packet, oe_ram_cpri_packet; 
+wire cpr_pkt_rdy_flg;
+
 
 // edge to and from the ip
-
-// 
 reg clk, clk_0, clk_1; 
 reg cs_0, cs_1;
 reg [DATA_WIDTH-1:0] inp_data_fifo; 
@@ -102,22 +114,33 @@ ram_dp_sr_sw  ram_cpri_payload (
 	.oe_1(oe_ecpri_tx_2_ram_cpri_payload)        // Output Enable
 );    
 
-/*
 //this ram is used for storing the resp packet
 ram_dp_sr_sw  ram_cpri_packet (
     .clk(clk)       , // Clock Input
-	.address_0(addr_0)  , // address_0 Input
-	.data_0(data_0)    , // data_0 bi-directional
+	.address_0(addr_ecpri_tx_2_ram_cpri_packet)  , // address_0 Input
+	.data_0(data_ecpri_tx_2_ram_cpri_packet)    , // data_0 bi-directional
 	.cs_0(cs_0)      , // Chip Select
-	.we_0(we_0)      , // Write Enable/Read Enable
-	.oe_0(oe_0)      , // Output Enable
-	.address_1(addr_1)    , // address_1 Input
-	.data_1(data_1)    , // data_1 bi-directional
+	.we_0(we_ecpri_tx_2_ram_cpri_packet)      , // Write Enable/Read Enable
+	.oe_0(oe_ecpri_tx_2_ram_cpri_packet)      , // Output Enable
+	.address_1(addr_ram_cpri_packet)    , // address_1 Input
+	.data_1(data_ram_cpri_packet)    , // data_1 bi-directional
 	.cs_1(cs_1)      , // Chip Select
-	.we_1(we_1)      , // Write Enable/Read Enable
-	.oe_1(oe_1)        // Output Enable
+	.we_1(we_ram_cpri_packet)      , // Write Enable/Read Enable
+	.oe_1(oe_ram_cpri_packet)        // Output Enable
 );  
 
+// ecpri_rx module instanstion
+ecpri_tx dut_ecpri_tx(
+    .cpri_pkt_rdy_flg(cpr_pkt_rdy_flg),  
+    .addr_0(addr_ecpri_tx_2_ram_cpri_payload), .data_0(data_ecpri_tx_2_ram_cpri_payload), .we_0(we_ecpri_tx_2_ram_cpri_payload), .oe_0(oe_ecpri_tx_2_ram_cpri_payload), //data_to_mem,   
+    .addr_1(addr_ecpri_tx_2_ram_cpri_packet), .data_1(data_ecpri_tx_2_ram_cpri_packet), .we_1(we_ecpri_tx_2_ram_cpri_packet), .oe_1(oe_ecpri_tx_2_ram_cpri_packet), 
+    .addr_2(addr_ecpri_tx_2_ram_eth_packet_hdr), .data_2(data_ecpri_tx_2_ram_eth_packet_hdr), .we_2(we_ecpri_tx_2_ram_eth_packet_hdr), .oe_2(oe_ecpri_tx_2_ram_eth_packet_hdr), //data_to_mem,   
+    .send_write_resp(send_write_resp), .send_read_resp(send_read_resp),
+    .clk(clk), .resp_payload_len(resp_payload_len), .recv_pkt(recv_pkt), .reset(reset)
+);
+
+
+/*
 //this ram is used for storing the recevied eth packet hdr
 ram_dp_sr_sw  ram_eth_packet_hdr (
     .clk(clk)       , // Clock Input

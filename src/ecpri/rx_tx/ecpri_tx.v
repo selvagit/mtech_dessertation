@@ -14,6 +14,7 @@ module ecpri_tx ( cpri_pkt_rdy_flg,
                 send_write_resp, send_read_resp,
                 clk, resp_payload_len, reset, recv_pkt);
 
+//-- data and address width for the port 
 parameter DATA_WIDTH = 8 ;
 parameter ADDR_WIDTH = 16 ;
 
@@ -27,7 +28,7 @@ input wire send_read_resp;
 input wire [7:0] resp_payload_len;
 
 //--------------Output Ports----------------------- 
-output reg [7:0] cpri_pkt_rdy_flg;
+output reg cpri_pkt_rdy_flg;
 
 // port to copy the cpri payload 
 output reg [ADDR_WIDTH-1:0] addr_0;
