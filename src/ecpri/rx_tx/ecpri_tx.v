@@ -117,8 +117,10 @@ always @(posedge clk or posedge reset) begin
     else begin
         if ( (send_write_resp == 1'b1) || (send_read_resp == 1'b1) ) begin
             state <= next_state; 
-            addr_1 <= addr_1 + 1; 
-            we_1 <= 1;
+            if (next_state != cpri_pkt_rdy) begin
+                addr_1 <= addr_1 + 1; 
+                we_1 <= 1;
+            end
         end
     end
 end

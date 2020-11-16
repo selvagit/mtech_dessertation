@@ -52,7 +52,6 @@ wire [DATA_WIDTH-1:0] data_ram_cpri_packet;
 reg we_ram_cpri_packet, oe_ram_cpri_packet; 
 wire cpr_pkt_rdy_flg;
 
-
 // edge to and from the ip
 reg clk, clk_0, clk_1; 
 reg cs_0, cs_1;
@@ -255,22 +254,12 @@ initial begin
     $display (" tb: state 2");
     for ( i = pcap_payload_offset; i < temp ; i = i + 1) begin 
         repeat(1) @(posedge clk) addr_to_eth_ram = j; we_to_eth_ram = 1; cs_0 = 1; oe_to_eth_ram = 0; tb_data = temp_mem[i]; j = j + 1;
-        //$display (" tb: ram_dp_inp_data %h", tb_data);
     end
 
-    /*
-    #350; // check the data is in the eth_ram 
-    $display (" tb: state 3");
-    for ( j = 0; j < payload_len ; j = j + 1) begin 
-        $display (" ram internal mem[%d] = %h", j, ram_recv_eth_packet.mem[j]);
+    #50; // set a random data to the cpri payload
+    for ( i = 0; i < pcap_payload_offset ; i = i + 1) begin 
+        repeat(1) @(posedge clk) ram_cpri_payload.mem[i] = i;
     end
-
-    #50 ; // read the ram data port 0
-    for ( i = 0; i < payload_len ; i = i + 1) begin 
-        repeat(1) @(posedge clk) addr_to_eth_ram = i; we_to_eth_ram = 0; cs_0 = 1; oe_to_eth_ram = 1; tb_data = data_to_eth_ram;
-        $display (" tb: ram_dp_out_data %h", tb_data);
-    end
-    */
 
     #100 // reset the epcri_rx module
     $display (" tb: state 4");
@@ -286,6 +275,7 @@ initial begin
         repeat(1) @(posedge clk) recv_pkt <= 1; cs_1 <= 1; cs_0 <= 0; oe_to_eth_ram <= 0;    
     end
 
+    #400;
     $finish;
 end
 
@@ -296,11 +286,12 @@ initial begin
     $dumpvars(0,tb_ecpri);
     $dumpvars(0,ram_recv_eth_packet);
     $dumpvars(0,dut_ecpri_rx);
+    $dumpvars(0,dut_ecpri_tx);
     $dumpvars(0,ram_cpri_payload);
 
-    $monitor ("data_1 = %h address_1 = %h data_1_out = %h", ram_recv_eth_packet.data_1 , ram_recv_eth_packet.address_1, ram_recv_eth_packet.data_1_out);
-    $monitor ("we_1 = %h oe_1 = %h addr_1 = %h data_1 = %h inp_d = %h state = %d nextstate =%d", 
-        dut_ecpri_rx.we_1, dut_ecpri_rx.oe_1, dut_ecpri_rx.addr_1, dut_ecpri_rx.data_1, dut_ecpri_rx.inp_d, dut_ecpri_rx.state, dut_ecpri_rx.next_state);
+    //$monitor ("data_1 = %h address_1 = %h data_1_out = %h", ram_recv_eth_packet.data_1 , ram_recv_eth_packet.address_1, ram_recv_eth_packet.data_1_out);
+    //$monitor ("we_1 = %h oe_1 = %h addr_1 = %h data_1 = %h inp_d = %h state = %d nextstate =%d", 
+    //   dut_ecpri_rx.we_1, dut_ecpri_rx.oe_1, dut_ecpri_rx.addr_1, dut_ecpri_rx.data_1, dut_ecpri_rx.inp_d, dut_ecpri_rx.state, dut_ecpri_rx.next_state);
     //$monitor ("cpri_marker = %h ", dut_ecpri_rx.cpri_marker);
 end
 
