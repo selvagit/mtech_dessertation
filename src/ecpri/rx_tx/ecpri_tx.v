@@ -115,14 +115,8 @@ always @(posedge clk or posedge reset) begin
         l_rm_len <= 0;
     end
     else begin
-        if ( recv_pkt == 1'b1 ) ; begin
+        if ( (send_write_resp == 1'b1) || (send_read_resp == 1'b1) ) begin
             state <= next_state; 
-
-            if (next_state == read_payload ) begin
-                addr_0 <= addr_0 + 1;  
-                oe_1 <= 1;
-            end
-
             addr_1 <= addr_1 + 1; 
             we_1 <= 1;
         end
@@ -132,9 +126,10 @@ end
 always @(posedge clk) begin    
     case (next_state)
         reset_tx: begin
-            if (recv_pkt) begin 
+            if ((send_write_resp == 1'b1) || (send_read_resp == 1'b1) ) begin 
                 next_state <= write_cpri_hdr;
                 g_payload_len <= resp_payload_len + 4 ;
+                oe_0  <= 1;
             end
         end
 
@@ -155,6 +150,7 @@ always @(posedge clk) begin
                 data_1 <= g_payload_len [7:0];
                 next_state <= write_cpri_remote_mem_hdr;
                 l_rm_mem_hdr_addr <= 0;
+                l_rm_len  <=  resp_payload_len ;
             end
 
             g_hdr_addr <= g_hdr_addr + 1;
@@ -192,11 +188,11 @@ always @(posedge clk) begin
                 end
 
                 if (l_rm_mem_hdr_addr == 8'hb) begin
-                    if ( l_rm_rw_req_resp == 8'h0) begin
+                    if ( send_read_resp == 1'b1) begin
                         next_state <= read_payload;
+                        addr_0 <= 0; 
                     end else begin
                         next_state <= write_to_mem; 
-                        addr_1 <= 0; 
                     end
                 end
 
@@ -208,6 +204,7 @@ always @(posedge clk) begin
             if ( l_rm_len > 8'h0) begin
                 l_rm_len <= l_rm_len - 1;
                 addr_1 <= addr_1 + 1;
+                addr_0 <= addr_0 + 1;  
                 data_1 <= data_0;
             end else begin 
                 next_state <= cpri_pkt_rdy;
