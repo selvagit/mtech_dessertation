@@ -1,0 +1,55 @@
+@startuml
+state  ecpri_top {
+state reset
+
+state ecpri_rx {
+  reset_rx-->find_cpri_hdr : ip_pkt_recv / find cpri header
+  find_cpri_hdr-->reset_rx : / did not find cpri header
+
+  find_cpri_hdr-->read_cpri_hdr : / read global header
+  read_cpri_hdr-->read_cpri_remote_mem_hdr : / read global header
+
+  read_cpri_remote_mem_hdr-->read_payload : / read cpri payload 
+  read_payload-->raise_rx_resp : / rx resp signal 
+  raise_rx_resp-->reset_rx : / got to the init state 
+
+  read_cpri_remote_mem_hdr-->write_to_mem : / write cpri payload 
+  write_to_mem-->raise_tx_resp : / raise res signal
+  raise_tx_resp-->reset_rx : / got to the init state 
+}
+
+state ecpri_tx {
+  reset_tx-->write_cpri_hdr : create the global header 
+
+  write_cpri_hdr-->write_cpri_remote_mem_hdr :  / create the remote memory header
+    
+  write_cpri_remote_mem_hdr-->write_read_payload : / read the cpri payload
+  write_read_payload-->cpri_pkt_rdy
+
+  write_cpri_remote_mem_hdr-->write_write_payload  : / create the write response 
+  write_write_payload-->cpri_pkt_rdy
+
+  cpri_pkt_rdy-->cpri_pkt_rdy_flg
+  cpri_pkt_rdy_flg-->reset_tx
+}
+
+reset-->ecpri_tx : / reset epcri_tx module 
+reset-->ecpri_rx : / reset ecpri_rx module 
+reset-->ip_pkt : / reset ip packet module
+
+ecpri_rx-->ecpri_tx : / create_read_resp
+ecpri_rx-->ecpri_tx : / create_write_resp 
+
+ecpri_tx --> ip_pkt  :  / create_pkt
+}
+
+state ip_pkt {
+  reset_ip_pkt-->eth_hdr : create_pkt / reset_ram_1 
+  eth_hdr-->ip_hdr : / create ip header
+  ip_hdr-->udp_hdr : / create udp header 
+  udp_hdr-->add_payload :  / add the payload  
+  add_payload-->reset_ip_pkt : / reset the module 
+}
+
+
+@enduml
