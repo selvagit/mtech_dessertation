@@ -1,0 +1,17 @@
+https://texample.net/tikz/examples/area/electrical-engineering/
+https://www.overleaf.com/learn/latex/LaTeX_Graphics_using_TikZ:_A_Tutorial_for_Beginners_(Part_4)%E2%80%94Circuit_Diagrams_Using_Circuitikz
+https://texample.net/tikz/examples/d-flip-flops-and-shift-register/
+
+
+# best link for digital logic 
+https://www.kleemans.ch/diagrams-for-logic-in-latex
+
+
+https://www.latex-tutorial.com/downloads/
+https://www.latex4technics.com/?note=1o7z
+
+
+
+
+
+

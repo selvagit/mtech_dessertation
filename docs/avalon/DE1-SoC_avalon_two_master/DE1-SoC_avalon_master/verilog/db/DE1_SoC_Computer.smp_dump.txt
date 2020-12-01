@@ -1,0 +1,10 @@
+
+State Machine - |DE1_SoC_Computer|state_2
+Name state_2.0001 
+state_2.0000 0 
+state_2.0001 1 
+
+State Machine - |DE1_SoC_Computer|state
+Name state.0001 
+state.0000 0 
+state.0001 1 
